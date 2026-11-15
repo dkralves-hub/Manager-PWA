@@ -1,0 +1,35 @@
+{
+  "rules": {
+    "salas": {
+      "$c": {
+        ".read": "auth != null",
+        ".write": "auth != null && data.child('meta/host').val() === auth.uid",
+        "meta": {
+          ".write": "auth != null && (!data.exists() || data.child('host').val() === auth.uid)"
+        },
+        "estado": {
+          ".write": "auth != null && root.child('salas').child($c).child('meta/host').val() === auth.uid"
+        },
+        "ao_vivo": {
+          ".write": "auth != null && root.child('salas').child($c).child('meta/host').val() === auth.uid"
+        },
+        "jogadores": {
+          ".write": "auth != null && root.child('salas').child($c).child('meta/host').val() === auth.uid",
+          "$u": {
+            ".write": "auth != null && $u === auth.uid"
+          }
+        },
+        "patch": {
+          "$u": {
+            ".write": "auth != null && ($u === auth.uid || root.child('salas').child($c).child('meta/host').val() === auth.uid)"
+          }
+        },
+        "reservas": {
+          "$k": {
+            ".write": "auth != null && (!data.exists() || data.val() === auth.uid || root.child('salas').child($c).child('meta/host').val() === auth.uid)"
+          }
+        }
+      }
+    }
+  }
+}

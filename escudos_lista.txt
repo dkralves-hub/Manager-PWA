@@ -1,0 +1,1067 @@
+# arquivo	clube	pais  (1066 clubes) - salve cada escudo na pasta escudos/ com o nome da 1a coluna
+flamengo.png	Flamengo	Brasil
+palmeiras.png	Palmeiras	Brasil
+corinthians.png	Corinthians	Brasil
+sao-paulo.png	São Paulo	Brasil
+santos.png	Santos	Brasil
+fluminense.png	Fluminense	Brasil
+botafogo.png	Botafogo	Brasil
+vasco-da-gama.png	Vasco da Gama	Brasil
+gremio.png	Grêmio	Brasil
+internacional.png	Internacional	Brasil
+atletico-mineiro.png	Atlético Mineiro	Brasil
+cruzeiro.png	Cruzeiro	Brasil
+bahia.png	Bahia	Brasil
+vitoria.png	Vitória	Brasil
+fortaleza.png	Fortaleza	Brasil
+ceara.png	Ceará	Brasil
+athletico-paranaense.png	Athletico Paranaense	Brasil
+coritiba.png	Coritiba	Brasil
+sport-recife.png	Sport Recife	Brasil
+goias.png	Goiás	Brasil
+avai.png	Avaí	Brasil
+criciuma.png	Criciúma	Brasil
+chapecoense.png	Chapecoense	Brasil
+juventude.png	Juventude	Brasil
+vila-nova.png	Vila Nova	Brasil
+novorizontino.png	Novorizontino	Brasil
+mirassol.png	Mirassol	Brasil
+ponte-preta.png	Ponte Preta	Brasil
+guarani.png	Guarani	Brasil
+operario-pr.png	Operário-PR	Brasil
+paysandu.png	Paysandu	Brasil
+remo.png	Remo	Brasil
+crb.png	CRB	Brasil
+amazonas.png	Amazonas	Brasil
+botafogo-sp.png	Botafogo-SP	Brasil
+ituano.png	Ituano	Brasil
+brusque.png	Brusque	Brasil
+america-mg.png	América-MG	Brasil
+atletico-go.png	Atlético-GO	Brasil
+cuiaba.png	Cuiabá	Brasil
+ypiranga.png	Ypiranga	Brasil
+figueirense.png	Figueirense	Brasil
+londrina.png	Londrina	Brasil
+volta-redonda.png	Volta Redonda	Brasil
+nautico.png	Náutico	Brasil
+santa-cruz.png	Santa Cruz	Brasil
+confianca.png	Confiança	Brasil
+botafogo-pb.png	Botafogo-PB	Brasil
+ferroviaria.png	Ferroviária	Brasil
+tombense.png	Tombense	Brasil
+athletic-mg.png	Athletic-MG	Brasil
+aparecidense.png	Aparecidense	Brasil
+sao-bernardo.png	São Bernardo	Brasil
+floresta.png	Floresta	Brasil
+abc.png	ABC	Brasil
+campinense.png	Campinense	Brasil
+maringa.png	Maringá	Brasil
+caxias.png	Caxias	Brasil
+anapolis.png	Anápolis	Brasil
+manaus.png	Manaus	Brasil
+arsenal.png	Arsenal	Inglaterra
+aston-villa.png	Aston Villa	Inglaterra
+bournemouth.png	Bournemouth	Inglaterra
+brentford.png	Brentford	Inglaterra
+brighton.png	Brighton	Inglaterra
+chelsea.png	Chelsea	Inglaterra
+crystal-palace.png	Crystal Palace	Inglaterra
+everton.png	Everton	Inglaterra
+fulham.png	Fulham	Inglaterra
+liverpool.png	Liverpool	Inglaterra
+manchester-city.png	Manchester City	Inglaterra
+manchester-united.png	Manchester United	Inglaterra
+newcastle-united.png	Newcastle United	Inglaterra
+nottingham-forest.png	Nottingham Forest	Inglaterra
+tottenham.png	Tottenham	Inglaterra
+west-ham.png	West Ham	Inglaterra
+wolverhampton.png	Wolverhampton	Inglaterra
+leeds-united.png	Leeds United	Inglaterra
+burnley.png	Burnley	Inglaterra
+sunderland.png	Sunderland	Inglaterra
+leicester-city.png	Leicester City	Inglaterra
+southampton.png	Southampton	Inglaterra
+ipswich-town.png	Ipswich Town	Inglaterra
+norwich-city.png	Norwich City	Inglaterra
+west-bromwich.png	West Bromwich	Inglaterra
+middlesbrough.png	Middlesbrough	Inglaterra
+sheffield-united.png	Sheffield United	Inglaterra
+watford.png	Watford	Inglaterra
+coventry-city.png	Coventry City	Inglaterra
+hull-city.png	Hull City	Inglaterra
+stoke-city.png	Stoke City	Inglaterra
+swansea-city.png	Swansea City	Inglaterra
+bristol-city.png	Bristol City	Inglaterra
+cardiff-city.png	Cardiff City	Inglaterra
+blackburn-rovers.png	Blackburn Rovers	Inglaterra
+preston-north-end.png	Preston North End	Inglaterra
+millwall.png	Millwall	Inglaterra
+queens-park-rangers.png	Queens Park Rangers	Inglaterra
+sheffield-wednesday.png	Sheffield Wednesday	Inglaterra
+derby-county.png	Derby County	Inglaterra
+birmingham-city.png	Birmingham City	Inglaterra
+wrexham.png	Wrexham	Inglaterra
+charlton-athletic.png	Charlton Athletic	Inglaterra
+wigan-athletic.png	Wigan Athletic	Inglaterra
+huddersfield-town.png	Huddersfield Town	Inglaterra
+bolton-wanderers.png	Bolton Wanderers	Inglaterra
+reading.png	Reading	Inglaterra
+portsmouth.png	Portsmouth	Inglaterra
+stockport-county.png	Stockport County	Inglaterra
+barnsley.png	Barnsley	Inglaterra
+peterborough-united.png	Peterborough United	Inglaterra
+lincoln-city.png	Lincoln City	Inglaterra
+blackpool.png	Blackpool	Inglaterra
+rotherham-united.png	Rotherham United	Inglaterra
+leyton-orient.png	Leyton Orient	Inglaterra
+wycombe-wanderers.png	Wycombe Wanderers	Inglaterra
+exeter-city.png	Exeter City	Inglaterra
+burton-albion.png	Burton Albion	Inglaterra
+mansfield-town.png	Mansfield Town	Inglaterra
+stevenage.png	Stevenage	Inglaterra
+real-madrid.png	Real Madrid	Espanha
+barcelona.png	Barcelona	Espanha
+atletico-de-madrid.png	Atlético de Madrid	Espanha
+sevilla.png	Sevilla	Espanha
+real-betis.png	Real Betis	Espanha
+real-sociedad.png	Real Sociedad	Espanha
+villarreal.png	Villarreal	Espanha
+athletic-bilbao.png	Athletic Bilbao	Espanha
+valencia.png	Valencia	Espanha
+girona.png	Girona	Espanha
+osasuna.png	Osasuna	Espanha
+celta-de-vigo.png	Celta de Vigo	Espanha
+getafe.png	Getafe	Espanha
+rayo-vallecano.png	Rayo Vallecano	Espanha
+mallorca.png	Mallorca	Espanha
+alaves.png	Alavés	Espanha
+las-palmas.png	Las Palmas	Espanha
+espanyol.png	Espanyol	Espanha
+levante.png	Levante	Espanha
+elche.png	Elche	Espanha
+leganes.png	Leganés	Espanha
+real-valladolid.png	Real Valladolid	Espanha
+granada.png	Granada	Espanha
+almeria.png	Almería	Espanha
+cadiz.png	Cádiz	Espanha
+deportivo-la-coruna.png	Deportivo La Coruña	Espanha
+racing-santander.png	Racing Santander	Espanha
+sporting-gijon.png	Sporting Gijón	Espanha
+real-oviedo.png	Real Oviedo	Espanha
+zaragoza.png	Zaragoza	Espanha
+eibar.png	Eibar	Espanha
+malaga.png	Málaga	Espanha
+burgos.png	Burgos	Espanha
+mirandes.png	Mirandés	Espanha
+castellon.png	Castellón	Espanha
+huesca.png	Huesca	Espanha
+cordoba.png	Córdoba	Espanha
+albacete.png	Albacete	Espanha
+racing-ferrol.png	Racing Ferrol	Espanha
+cartagena.png	Cartagena	Espanha
+real-murcia.png	Real Murcia	Espanha
+tenerife.png	Tenerife	Espanha
+racing-ferrol-b.png	Racing Ferrol B	Espanha
+ibiza.png	Ibiza	Espanha
+lugo.png	Lugo	Espanha
+numancia.png	Numancia	Espanha
+alcorcon.png	Alcorcón	Espanha
+recreativo-huelva.png	Recreativo Huelva	Espanha
+sabadell.png	Sabadell	Espanha
+ponferradina.png	Ponferradina	Espanha
+cultural-leonesa.png	Cultural Leonesa	Espanha
+villarreal-b.png	Villarreal B	Espanha
+barcelona-atletic.png	Barcelona Atlètic	Espanha
+real-madrid-castilla.png	Real Madrid Castilla	Espanha
+atletico-sanluqueno.png	Atlético Sanluqueño	Espanha
+algeciras.png	Algeciras	Espanha
+hercules.png	Hércules	Espanha
+amorebieta.png	Amorebieta	Espanha
+arenteiro.png	Arenteiro	Espanha
+teruel.png	Teruel	Espanha
+inter.png	Inter	Itália
+milan.png	Milan	Itália
+juventus.png	Juventus	Itália
+napoli.png	Napoli	Itália
+roma.png	Roma	Itália
+lazio.png	Lazio	Itália
+atalanta.png	Atalanta	Itália
+fiorentina.png	Fiorentina	Itália
+bologna.png	Bologna	Itália
+torino.png	Torino	Itália
+genoa.png	Genoa	Itália
+udinese.png	Udinese	Itália
+cagliari.png	Cagliari	Itália
+verona.png	Verona	Itália
+parma.png	Parma	Itália
+lecce.png	Lecce	Itália
+como.png	Como	Itália
+sassuolo.png	Sassuolo	Itália
+pisa.png	Pisa	Itália
+cremonese.png	Cremonese	Itália
+palermo.png	Palermo	Itália
+sampdoria.png	Sampdoria	Itália
+venezia.png	Venezia	Itália
+spezia.png	Spezia	Itália
+bari.png	Bari	Itália
+cesena.png	Cesena	Itália
+modena.png	Modena	Itália
+frosinone.png	Frosinone	Itália
+empoli.png	Empoli	Itália
+monza.png	Monza	Itália
+brescia.png	Brescia	Itália
+catanzaro.png	Catanzaro	Itália
+reggiana.png	Reggiana	Itália
+salernitana.png	Salernitana	Itália
+cosenza.png	Cosenza	Itália
+sudtirol.png	Sudtirol	Itália
+juve-stabia.png	Juve Stabia	Itália
+carrarese.png	Carrarese	Itália
+mantova.png	Mantova	Itália
+cittadella.png	Cittadella	Itália
+vicenza.png	Vicenza	Itália
+padova.png	Padova	Itália
+triestina.png	Triestina	Itália
+pescara.png	Pescara	Itália
+ascoli.png	Ascoli	Itália
+perugia.png	Perugia	Itália
+ternana.png	Ternana	Itália
+avellino.png	Avellino	Itália
+benevento.png	Benevento	Itália
+foggia.png	Foggia	Itália
+lecco.png	Lecco	Itália
+catania.png	Catania	Itália
+arezzo.png	Arezzo	Itália
+gubbio.png	Gubbio	Itália
+pontedera.png	Pontedera	Itália
+pianese.png	Pianese	Itália
+torres.png	Torres	Itália
+entella.png	Entella	Itália
+rimini.png	Rimini	Itália
+pergolettese.png	Pergolettese	Itália
+bayern-de-munique.png	Bayern de Munique	Alemanha
+borussia-dortmund.png	Borussia Dortmund	Alemanha
+rb-leipzig.png	RB Leipzig	Alemanha
+bayer-leverkusen.png	Bayer Leverkusen	Alemanha
+eintracht-frankfurt.png	Eintracht Frankfurt	Alemanha
+stuttgart.png	Stuttgart	Alemanha
+wolfsburg.png	Wolfsburg	Alemanha
+borussia-monchengladbach.png	Borussia Mönchengladbach	Alemanha
+werder-bremen.png	Werder Bremen	Alemanha
+freiburg.png	Freiburg	Alemanha
+hoffenheim.png	Hoffenheim	Alemanha
+mainz-05.png	Mainz 05	Alemanha
+union-berlin.png	Union Berlin	Alemanha
+augsburg.png	Augsburg	Alemanha
+heidenheim.png	Heidenheim	Alemanha
+st-pauli.png	St. Pauli	Alemanha
+koln.png	Köln	Alemanha
+hamburgo.png	Hamburgo	Alemanha
+schalke-04.png	Schalke 04	Alemanha
+hertha-berlin.png	Hertha Berlin	Alemanha
+hannover-96.png	Hannover 96	Alemanha
+fortuna-dusseldorf.png	Fortuna Düsseldorf	Alemanha
+nurnberg.png	Nürnberg	Alemanha
+kaiserslautern.png	Kaiserslautern	Alemanha
+karlsruhe.png	Karlsruhe	Alemanha
+paderborn.png	Paderborn	Alemanha
+magdeburg.png	Magdeburg	Alemanha
+hansa-rostock.png	Hansa Rostock	Alemanha
+holstein-kiel.png	Holstein Kiel	Alemanha
+darmstadt.png	Darmstadt	Alemanha
+greuther-furth.png	Greuther Fürth	Alemanha
+braunschweig.png	Braunschweig	Alemanha
+elversberg.png	Elversberg	Alemanha
+preu-en-munster.png	Preußen Münster	Alemanha
+bochum.png	Bochum	Alemanha
+arminia-bielefeld.png	Arminia Bielefeld	Alemanha
+dynamo-dresden.png	Dynamo Dresden	Alemanha
+1860-munique.png	1860 Munique	Alemanha
+duisburg.png	Duisburg	Alemanha
+waldhof-mannheim.png	Waldhof Mannheim	Alemanha
+erzgebirge-aue.png	Erzgebirge Aue	Alemanha
+viktoria-koln.png	Viktoria Köln	Alemanha
+energie-cottbus.png	Energie Cottbus	Alemanha
+saarbrucken.png	Saarbrücken	Alemanha
+wehen-wiesbaden.png	Wehen Wiesbaden	Alemanha
+rot-weiss-essen.png	Rot-Weiss Essen	Alemanha
+ingolstadt.png	Ingolstadt	Alemanha
+hannover-96-ii.png	Hannover 96 II	Alemanha
+alemannia-aachen.png	Alemannia Aachen	Alemanha
+osnabruck.png	Osnabrück	Alemanha
+verl.png	Verl	Alemanha
+hoffenheim-ii.png	Hoffenheim II	Alemanha
+ulm.png	Ulm	Alemanha
+borussia-dortmund-ii.png	Borussia Dortmund II	Alemanha
+paris-saint-germain.png	Paris Saint-Germain	França
+olympique-de-marseille.png	Olympique de Marseille	França
+olympique-lyonnais.png	Olympique Lyonnais	França
+monaco.png	Monaco	França
+lille.png	Lille	França
+nice.png	Nice	França
+lens.png	Lens	França
+rennes.png	Rennes	França
+strasbourg.png	Strasbourg	França
+nantes.png	Nantes	França
+toulouse.png	Toulouse	França
+montpellier.png	Montpellier	França
+reims.png	Reims	França
+brest.png	Brest	França
+auxerre.png	Auxerre	França
+angers.png	Angers	França
+le-havre.png	Le Havre	França
+metz.png	Metz	França
+lorient.png	Lorient	França
+paris-fc.png	Paris FC	França
+saint-etienne.png	Saint-Étienne	França
+bordeaux.png	Bordeaux	França
+sochaux.png	Sochaux	França
+guingamp.png	Guingamp	França
+caen.png	Caen	França
+rodez.png	Rodez	França
+pau.png	Pau	França
+amiens.png	Amiens	França
+troyes.png	Troyes	França
+grenoble.png	Grenoble	França
+laval.png	Laval	França
+red-star.png	Red Star	França
+dunkerque.png	Dunkerque	França
+annecy.png	Annecy	França
+clermont.png	Clermont	França
+bastia.png	Bastia	França
+martigues.png	Martigues	França
+ajaccio.png	Ajaccio	França
+nancy.png	Nancy	França
+valenciennes.png	Valenciennes	França
+nimes.png	Nîmes	França
+dijon.png	Dijon	França
+quevilly-rouen.png	Quevilly-Rouen	França
+le-mans.png	Le Mans	França
+orleans.png	Orléans	França
+niort.png	Niort	França
+versailles.png	Versailles	França
+bourg-en-bresse.png	Bourg-en-Bresse	França
+villefranche.png	Villefranche	França
+concarneau.png	Concarneau	França
+paris-13-atletico.png	Paris 13 Atletico	França
+sedan.png	Sedan	França
+cholet.png	Cholet	França
+fleury.png	Fleury	França
+stade-briochin.png	Stade Briochin	França
+aubagne.png	Aubagne	França
+nancy-b.png	Nancy B	França
+chambly.png	Chambly	França
+avranches.png	Avranches	França
+beziers.png	Béziers	França
+benfica.png	Benfica	Portugal
+porto.png	Porto	Portugal
+sporting-cp.png	Sporting CP	Portugal
+braga.png	Braga	Portugal
+vitoria-de-guimaraes.png	Vitória de Guimarães	Portugal
+famalicao.png	Famalicão	Portugal
+moreirense.png	Moreirense	Portugal
+estoril.png	Estoril	Portugal
+gil-vicente.png	Gil Vicente	Portugal
+casa-pia.png	Casa Pia	Portugal
+rio-ave.png	Rio Ave	Portugal
+arouca.png	Arouca	Portugal
+santa-clara.png	Santa Clara	Portugal
+nacional.png	Nacional	Portugal
+farense.png	Farense	Portugal
+alverca.png	Alverca	Portugal
+tondela.png	Tondela	Portugal
+estrela-da-amadora.png	Estrela da Amadora	Portugal
+boavista.png	Boavista	Portugal
+maritimo.png	Marítimo	Portugal
+belenenses.png	Belenenses	Portugal
+vizela.png	Vizela	Portugal
+pacos-de-ferreira.png	Paços de Ferreira	Portugal
+chaves.png	Chaves	Portugal
+portimonense.png	Portimonense	Portugal
+academica.png	Académica	Portugal
+leixoes.png	Leixões	Portugal
+desportivo-das-aves.png	Desportivo das Aves	Portugal
+penafiel.png	Penafiel	Portugal
+mafra.png	Mafra	Portugal
+torreense.png	Torreense	Portugal
+feirense.png	Feirense	Portugal
+oliveirense.png	Oliveirense	Portugal
+academico-de-viseu.png	Académico de Viseu	Portugal
+vilafranquense.png	Vilafranquense	Portugal
+lourosa.png	Lourosa	Portugal
+varzim.png	Varzim	Portugal
+trofense.png	Trofense	Portugal
+felgueiras.png	Felgueiras	Portugal
+fafe.png	Fafe	Portugal
+lank-vilaverdense.png	Länk Vilaverdense	Portugal
+sporting-da-covilha.png	Sporting da Covilhã	Portugal
+anadia.png	Anadia	Portugal
+amora.png	Amora	Portugal
+uniao-de-leiria.png	União de Leiria	Portugal
+marinhense.png	Marinhense	Portugal
+real-sc.png	Real SC	Portugal
+sporting-b.png	Sporting B	Portugal
+benfica-b.png	Benfica B	Portugal
+porto-b.png	Porto B	Portugal
+braga-b.png	Braga B	Portugal
+cova-da-piedade.png	Cova da Piedade	Portugal
+sacavenense.png	Sacavenense	Portugal
+atletico-cp.png	Atlético CP	Portugal
+ajax.png	Ajax	Holanda
+psv-eindhoven.png	PSV Eindhoven	Holanda
+feyenoord.png	Feyenoord	Holanda
+az-alkmaar.png	AZ Alkmaar	Holanda
+fc-twente.png	FC Twente	Holanda
+fc-utrecht.png	FC Utrecht	Holanda
+sparta-roterda.png	Sparta Roterdã	Holanda
+go-ahead-eagles.png	Go Ahead Eagles	Holanda
+nec-nijmegen.png	NEC Nijmegen	Holanda
+heerenveen.png	Heerenveen	Holanda
+fortuna-sittard.png	Fortuna Sittard	Holanda
+pec-zwolle.png	PEC Zwolle	Holanda
+heracles.png	Heracles	Holanda
+groningen.png	Groningen	Holanda
+willem-ii.png	Willem II	Holanda
+nac-breda.png	NAC Breda	Holanda
+excelsior.png	Excelsior	Holanda
+telstar.png	Telstar	Holanda
+roda-jc.png	Roda JC	Holanda
+cambuur.png	Cambuur	Holanda
+almere-city.png	Almere City	Holanda
+de-graafschap.png	De Graafschap	Holanda
+vitesse.png	Vitesse	Holanda
+ado-den-haag.png	ADO Den Haag	Holanda
+den-bosch.png	Den Bosch	Holanda
+vvv-venlo.png	VVV-Venlo	Holanda
+mvv-maastricht.png	MVV Maastricht	Holanda
+helmond-sport.png	Helmond Sport	Holanda
+dordrecht.png	Dordrecht	Holanda
+emmen.png	Emmen	Holanda
+fc-eindhoven.png	FC Eindhoven	Holanda
+top-oss.png	TOP Oss	Holanda
+jong-ajax.png	Jong Ajax	Holanda
+jong-psv.png	Jong PSV	Holanda
+jong-az.png	Jong AZ	Holanda
+jong-utrecht.png	Jong Utrecht	Holanda
+quick-boys.png	Quick Boys	Holanda
+katwijk.png	Katwijk	Holanda
+spakenburg.png	Spakenburg	Holanda
+koninklijke-hfc.png	Koninklijke HFC	Holanda
+rijnsburgse-boys.png	Rijnsburgse Boys	Holanda
+hoek.png	Hoek	Holanda
+ijsselmeervogels.png	IJsselmeervogels	Holanda
+excelsior-maassluis.png	Excelsior Maassluis	Holanda
+ajax-b.png	Ajax B	Holanda
+scheveningen.png	Scheveningen	Holanda
+barendrecht.png	Barendrecht	Holanda
+kozakken-boys.png	Kozakken Boys	Holanda
+vitesse-b.png	Vitesse B	Holanda
+noordwijk.png	Noordwijk	Holanda
+ajax-a.png	Ajax A	Holanda
+sparta-b.png	Sparta B	Holanda
+vvsb.png	VVSB	Holanda
+ado-b.png	ADO B	Holanda
+boca-juniors.png	Boca Juniors	Argentina
+river-plate.png	River Plate	Argentina
+racing-club.png	Racing Club	Argentina
+independiente.png	Independiente	Argentina
+san-lorenzo.png	San Lorenzo	Argentina
+estudiantes.png	Estudiantes	Argentina
+velez-sarsfield.png	Vélez Sarsfield	Argentina
+lanus.png	Lanús	Argentina
+talleres.png	Talleres	Argentina
+argentinos-juniors.png	Argentinos Juniors	Argentina
+newell-s-old-boys.png	Newell's Old Boys	Argentina
+rosario-central.png	Rosario Central	Argentina
+defensa-y-justicia.png	Defensa y Justicia	Argentina
+huracan.png	Huracán	Argentina
+banfield.png	Banfield	Argentina
+godoy-cruz.png	Godoy Cruz	Argentina
+belgrano.png	Belgrano	Argentina
+tigre.png	Tigre	Argentina
+platense.png	Platense	Argentina
+gimnasia-la-plata.png	Gimnasia La Plata	Argentina
+atletico-tucuman.png	Atlético Tucumán	Argentina
+colon.png	Colón	Argentina
+union.png	Unión	Argentina
+quilmes.png	Quilmes	Argentina
+chacarita-juniors.png	Chacarita Juniors	Argentina
+nueva-chicago.png	Nueva Chicago	Argentina
+ferro-carril-oeste.png	Ferro Carril Oeste	Argentina
+almagro.png	Almagro	Argentina
+instituto.png	Instituto	Argentina
+guemes.png	Güemes	Argentina
+temperley.png	Temperley	Argentina
+sarmiento.png	Sarmiento	Argentina
+barracas-central.png	Barracas Central	Argentina
+estudiantes-de-rio-cuarto.png	Estudiantes de Río Cuarto	Argentina
+san-telmo.png	San Telmo	Argentina
+moron.png	Morón	Argentina
+deportivo-riestra.png	Deportivo Riestra	Argentina
+aldosivi.png	Aldosivi	Argentina
+patronato.png	Patronato	Argentina
+atlanta.png	Atlanta	Argentina
+deportivo-merlo.png	Deportivo Merlo	Argentina
+defensores-de-belgrano.png	Defensores de Belgrano	Argentina
+brown-de-adrogue.png	Brown de Adrogué	Argentina
+talleres-de-remedios.png	Talleres de Remedios	Argentina
+argentino-de-quilmes.png	Argentino de Quilmes	Argentina
+midland.png	Midland	Argentina
+excursionistas.png	Excursionistas	Argentina
+villa-dalmine.png	Villa Dálmine	Argentina
+san-miguel.png	San Miguel	Argentina
+sacachispas.png	Sacachispas	Argentina
+tristan-suarez.png	Tristán Suárez	Argentina
+deportivo-armenio.png	Deportivo Armenio	Argentina
+acassuso.png	Acassuso	Argentina
+comunicaciones.png	Comunicaciones	Argentina
+dock-sud.png	Dock Sud	Argentina
+laferrere.png	Laferrere	Argentina
+flandria.png	Flandria	Argentina
+fenix.png	Fénix	Argentina
+america.png	América	México
+guadalajara.png	Guadalajara	México
+cruz-azul.png	Cruz Azul	México
+pumas-unam.png	Pumas UNAM	México
+tigres-uanl.png	Tigres UANL	México
+monterrey.png	Monterrey	México
+toluca.png	Toluca	México
+santos-laguna.png	Santos Laguna	México
+pachuca.png	Pachuca	México
+leon.png	León	México
+atlas.png	Atlas	México
+necaxa.png	Necaxa	México
+puebla.png	Puebla	México
+tijuana.png	Tijuana	México
+queretaro.png	Querétaro	México
+mazatlan.png	Mazatlán	México
+juarez.png	Juárez	México
+atletico-san-luis.png	Atlético San Luis	México
+atlante.png	Atlante	México
+celaya.png	Celaya	México
+tapatio.png	Tapatío	México
+leones-negros.png	Leones Negros	México
+cancun.png	Cancún	México
+tepatitlan.png	Tepatitlán	México
+correcaminos.png	Correcaminos	México
+dorados.png	Dorados	México
+venados.png	Venados	México
+morelia.png	Morelia	México
+alebrijes-de-oaxaca.png	Alebrijes de Oaxaca	México
+zacatepec.png	Zacatepec	México
+mineros-de-zacatecas.png	Mineros de Zacatecas	México
+tlaxcala.png	Tlaxcala	México
+cimarrones.png	Cimarrones	México
+pumas-tabasco.png	Pumas Tabasco	México
+irapuato.png	Irapuato	México
+raya2.png	Raya2	México
+pioneros.png	Pioneros	México
+tuxtla.png	Tuxtla	México
+cafetaleros.png	Cafetaleros	México
+inter-playa-del-carmen.png	Inter Playa del Carmen	México
+colima.png	Colima	México
+durango.png	Durango	México
+santos-b.png	Santos B	México
+chivas-b.png	Chivas B	México
+atlas-b.png	Atlas B	México
+toluca-b.png	Toluca B	México
+pachuca-b.png	Pachuca B	México
+leon-b.png	León B	México
+america-b.png	América B	México
+cruz-azul-b.png	Cruz Azul B	México
+tigres-b.png	Tigres B	México
+monterrey-b.png	Monterrey B	México
+necaxa-b.png	Necaxa B	México
+puebla-b.png	Puebla B	México
+inter-miami.png	Inter Miami	Estados Unidos
+la-galaxy.png	LA Galaxy	Estados Unidos
+lafc.png	LAFC	Estados Unidos
+seattle-sounders.png	Seattle Sounders	Estados Unidos
+portland-timbers.png	Portland Timbers	Estados Unidos
+atlanta-united.png	Atlanta United	Estados Unidos
+new-york-red-bulls.png	New York Red Bulls	Estados Unidos
+new-york-city-fc.png	New York City FC	Estados Unidos
+philadelphia-union.png	Philadelphia Union	Estados Unidos
+columbus-crew.png	Columbus Crew	Estados Unidos
+orlando-city.png	Orlando City	Estados Unidos
+austin-fc.png	Austin FC	Estados Unidos
+fc-dallas.png	FC Dallas	Estados Unidos
+houston-dynamo.png	Houston Dynamo	Estados Unidos
+sporting-kansas-city.png	Sporting Kansas City	Estados Unidos
+minnesota-united.png	Minnesota United	Estados Unidos
+real-salt-lake.png	Real Salt Lake	Estados Unidos
+colorado-rapids.png	Colorado Rapids	Estados Unidos
+louisville-city.png	Louisville City	Estados Unidos
+charleston-battery.png	Charleston Battery	Estados Unidos
+phoenix-rising.png	Phoenix Rising	Estados Unidos
+sacramento-republic.png	Sacramento Republic	Estados Unidos
+san-antonio-fc.png	San Antonio FC	Estados Unidos
+tampa-bay-rowdies.png	Tampa Bay Rowdies	Estados Unidos
+indy-eleven.png	Indy Eleven	Estados Unidos
+detroit-city.png	Detroit City	Estados Unidos
+pittsburgh-riverhounds.png	Pittsburgh Riverhounds	Estados Unidos
+rhode-island-fc.png	Rhode Island FC	Estados Unidos
+birmingham-legion.png	Birmingham Legion	Estados Unidos
+memphis-901.png	Memphis 901	Estados Unidos
+hartford-athletic.png	Hartford Athletic	Estados Unidos
+oakland-roots.png	Oakland Roots	Estados Unidos
+el-paso-locomotive.png	El Paso Locomotive	Estados Unidos
+orange-county-sc.png	Orange County SC	Estados Unidos
+miami-fc.png	Miami FC	Estados Unidos
+las-vegas-lights.png	Las Vegas Lights	Estados Unidos
+union-omaha.png	Union Omaha	Estados Unidos
+greenville-triumph.png	Greenville Triumph	Estados Unidos
+chattanooga-red-wolves.png	Chattanooga Red Wolves	Estados Unidos
+richmond-kickers.png	Richmond Kickers	Estados Unidos
+spokane-velocity.png	Spokane Velocity	Estados Unidos
+northern-colorado-hailstorm.png	Northern Colorado Hailstorm	Estados Unidos
+westchester-sc.png	Westchester SC	Estados Unidos
+lexington-sc.png	Lexington SC	Estados Unidos
+one-knoxville.png	One Knoxville	Estados Unidos
+forward-madison.png	Forward Madison	Estados Unidos
+south-georgia-tormenta.png	South Georgia Tormenta	Estados Unidos
+charlotte-independence.png	Charlotte Independence	Estados Unidos
+fc-naples.png	FC Naples	Estados Unidos
+central-valley-fuego.png	Central Valley Fuego	Estados Unidos
+texoma-fc.png	Texoma FC	Estados Unidos
+portland-hearts-of-pine.png	Portland Hearts of Pine	Estados Unidos
+ac-boise.png	AC Boise	Estados Unidos
+sarasota-paradise.png	Sarasota Paradise	Estados Unidos
+vissel-kobe.png	Vissel Kobe	Japão
+yokohama-f-marinos.png	Yokohama F. Marinos	Japão
+kawasaki-frontale.png	Kawasaki Frontale	Japão
+urawa-red-diamonds.png	Urawa Red Diamonds	Japão
+kashima-antlers.png	Kashima Antlers	Japão
+gamba-osaka.png	Gamba Osaka	Japão
+cerezo-osaka.png	Cerezo Osaka	Japão
+sanfrecce-hiroshima.png	Sanfrecce Hiroshima	Japão
+nagoya-grampus.png	Nagoya Grampus	Japão
+fc-tokyo.png	FC Tokyo	Japão
+kashiwa-reysol.png	Kashiwa Reysol	Japão
+avispa-fukuoka.png	Avispa Fukuoka	Japão
+machida-zelvia.png	Machida Zelvia	Japão
+shimizu-s-pulse.png	Shimizu S-Pulse	Japão
+albirex-niigata.png	Albirex Niigata	Japão
+kyoto-sanga.png	Kyoto Sanga	Japão
+tokyo-verdy.png	Tokyo Verdy	Japão
+fagiano-okayama.png	Fagiano Okayama	Japão
+sagan-tosu.png	Sagan Tosu	Japão
+shonan-bellmare.png	Shonan Bellmare	Japão
+jubilo-iwata.png	Júbilo Iwata	Japão
+consadole-sapporo.png	Consadole Sapporo	Japão
+vegalta-sendai.png	Vegalta Sendai	Japão
+yokohama-fc.png	Yokohama FC	Japão
+montedio-yamagata.png	Montedio Yamagata	Japão
+ventforet-kofu.png	Ventforet Kofu	Japão
+omiya-ardija.png	Omiya Ardija	Japão
+jef-united-chiba.png	JEF United Chiba	Japão
+blaublitz-akita.png	Blaublitz Akita	Japão
+tochigi-sc.png	Tochigi SC	Japão
+mito-hollyhock.png	Mito HollyHock	Japão
+thespa-gunma.png	Thespa Gunma	Japão
+fujieda-myfc.png	Fujieda MYFC	Japão
+ehime-fc.png	Ehime FC	Japão
+tokushima-vortis.png	Tokushima Vortis	Japão
+v-varen-nagasaki.png	V-Varen Nagasaki	Japão
+roasso-kumamoto.png	Roasso Kumamoto	Japão
+oita-trinita.png	Oita Trinita	Japão
+renofa-yamaguchi.png	Renofa Yamaguchi	Japão
+iwaki-fc.png	Iwaki FC	Japão
+kataller-toyama.png	Kataller Toyama	Japão
+gainare-tottori.png	Gainare Tottori	Japão
+kamatamare-sanuki.png	Kamatamare Sanuki	Japão
+zweigen-kanazawa.png	Zweigen Kanazawa	Japão
+matsumoto-yamaga.png	Matsumoto Yamaga	Japão
+nagano-parceiro.png	Nagano Parceiro	Japão
+iwate-grulla.png	Iwate Grulla	Japão
+fukushima-united.png	Fukushima United	Japão
+azul-claro-numazu.png	Azul Claro Numazu	Japão
+vanraure-hachinohe.png	Vanraure Hachinohe	Japão
+fc-imabari.png	FC Imabari	Japão
+giravanz-kitakyushu.png	Giravanz Kitakyushu	Japão
+sc-sagamihara.png	SC Sagamihara	Japão
+tegevajaro-miyazaki.png	Tegevajaro Miyazaki	Japão
+kagoshima-united.png	Kagoshima United	Japão
+fc-gifu.png	FC Gifu	Japão
+nara-club.png	Nara Club	Japão
+ryukyu.png	Ryukyu	Japão
+galatasaray.png	Galatasaray	Turquia
+fenerbahce.png	Fenerbahçe	Turquia
+besiktas.png	Beşiktaş	Turquia
+trabzonspor.png	Trabzonspor	Turquia
+basaksehir.png	Başakşehir	Turquia
+adana-demirspor.png	Adana Demirspor	Turquia
+antalyaspor.png	Antalyaspor	Turquia
+konyaspor.png	Konyaspor	Turquia
+sivasspor.png	Sivasspor	Turquia
+kayserispor.png	Kayserispor	Turquia
+alanyaspor.png	Alanyaspor	Turquia
+gaziantep-fk.png	Gaziantep FK	Turquia
+rizespor.png	Rizespor	Turquia
+samsunspor.png	Samsunspor	Turquia
+hatayspor.png	Hatayspor	Turquia
+kas-mpasa.png	Kasımpaşa	Turquia
+eyupspor.png	Eyüpspor	Turquia
+goztepe.png	Göztepe	Turquia
+bursaspor.png	Bursaspor	Turquia
+altay.png	Altay	Turquia
+ankaragucu.png	Ankaragücü	Turquia
+karagumruk.png	Karagümrük	Turquia
+bodrum.png	Bodrum	Turquia
+pendikspor.png	Pendikspor	Turquia
+giresunspor.png	Giresunspor	Turquia
+boluspor.png	Boluspor	Turquia
+manisa.png	Manisa	Turquia
+corum.png	Çorum	Turquia
+sakaryaspor.png	Sakaryaspor	Turquia
+erzurumspor.png	Erzurumspor	Turquia
+keciorengucu.png	Keçiörengücü	Turquia
+umraniyespor.png	Ümraniyespor	Turquia
+sanl-urfaspor.png	Şanlıurfaspor	Turquia
+istanbulspor.png	Istanbulspor	Turquia
+adanaspor.png	Adanaspor	Turquia
+tuzlaspor.png	Tuzlaspor	Turquia
+eskisehirspor.png	Eskişehirspor	Turquia
+denizlispor.png	Denizlispor	Turquia
+elaz-gspor.png	Elazığspor	Turquia
+sar-yer.png	Sarıyer	Turquia
+band-rmaspor.png	Bandırmaspor	Turquia
+menemenspor.png	Menemenspor	Turquia
+alt-nordu.png	Altınordu	Turquia
+kocaelispor.png	Kocaelispor	Turquia
+amed.png	Amed	Turquia
+isparta-32.png	Isparta 32	Turquia
+karaman.png	Karaman	Turquia
+ankara-demirspor.png	Ankara Demirspor	Turquia
+fethiyespor.png	Fethiyespor	Turquia
+diyarbekirspor.png	Diyarbekirspor	Turquia
+nigde-anadolu.png	Niğde Anadolu	Turquia
+serik.png	Serik	Turquia
+yeni-malatyaspor.png	Yeni Malatyaspor	Turquia
+k-rklarelispor.png	Kırklarelispor	Turquia
+club-brugge.png	Club Brugge	Bélgica
+anderlecht.png	Anderlecht	Bélgica
+union-saint-gilloise.png	Union Saint-Gilloise	Bélgica
+genk.png	Genk	Bélgica
+antwerp.png	Antwerp	Bélgica
+gent.png	Gent	Bélgica
+standard-de-liege.png	Standard de Liège	Bélgica
+cercle-brugge.png	Cercle Brugge	Bélgica
+mechelen.png	Mechelen	Bélgica
+westerlo.png	Westerlo	Bélgica
+charleroi.png	Charleroi	Bélgica
+oh-leuven.png	OH Leuven	Bélgica
+sint-truiden.png	Sint-Truiden	Bélgica
+zulte-waregem.png	Zulte Waregem	Bélgica
+dender.png	Dender	Bélgica
+kortrijk.png	Kortrijk	Bélgica
+beerschot.png	Beerschot	Bélgica
+lommel.png	Lommel	Bélgica
+lokeren.png	Lokeren	Bélgica
+rwdm.png	RWDM	Bélgica
+seraing.png	Seraing	Bélgica
+eupen.png	Eupen	Bélgica
+beveren.png	Beveren	Bélgica
+patro-eisden.png	Patro Eisden	Bélgica
+francs-borains.png	Francs Borains	Bélgica
+club-nxt.png	Club NXT	Bélgica
+lierse.png	Lierse	Bélgica
+anderlecht-b.png	Anderlecht B	Bélgica
+waasland-beveren.png	Waasland-Beveren	Bélgica
+roeselare.png	Roeselare	Bélgica
+dessel.png	Dessel	Bélgica
+virton.png	Virton	Bélgica
+mons.png	Mons	Bélgica
+knokke.png	Knokke	Bélgica
+tubize.png	Tubize	Bélgica
+olympic-charleroi.png	Olympic Charleroi	Bélgica
+rupel-boom.png	Rupel Boom	Bélgica
+heist.png	Heist	Bélgica
+oostende.png	Oostende	Bélgica
+hoogstraten.png	Hoogstraten	Bélgica
+thes-sport.png	Thes Sport	Bélgica
+union-sg-b.png	Union SG B	Bélgica
+cercle-b.png	Cercle B	Bélgica
+gent-b.png	Gent B	Bélgica
+genk-b.png	Genk B	Bélgica
+standard-b.png	Standard B	Bélgica
+dender-b.png	Dender B	Bélgica
+aalst.png	Aalst	Bélgica
+celtic.png	Celtic	Escócia
+rangers.png	Rangers	Escócia
+hearts.png	Hearts	Escócia
+hibernian.png	Hibernian	Escócia
+aberdeen.png	Aberdeen	Escócia
+dundee-united.png	Dundee United	Escócia
+motherwell.png	Motherwell	Escócia
+kilmarnock.png	Kilmarnock	Escócia
+st-mirren.png	St Mirren	Escócia
+ross-county.png	Ross County	Escócia
+st-johnstone.png	St Johnstone	Escócia
+dundee.png	Dundee	Escócia
+livingston.png	Livingston	Escócia
+partick-thistle.png	Partick Thistle	Escócia
+raith-rovers.png	Raith Rovers	Escócia
+ayr-united.png	Ayr United	Escócia
+falkirk.png	Falkirk	Escócia
+queen-s-park.png	Queen's Park	Escócia
+greenock-morton.png	Greenock Morton	Escócia
+hamilton-academical.png	Hamilton Academical	Escócia
+airdrieonians.png	Airdrieonians	Escócia
+arbroath.png	Arbroath	Escócia
+dunfermline.png	Dunfermline	Escócia
+inverness.png	Inverness	Escócia
+cove-rangers.png	Cove Rangers	Escócia
+peterhead.png	Peterhead	Escócia
+alloa.png	Alloa	Escócia
+stenhousemuir.png	Stenhousemuir	Escócia
+kelty-hearts.png	Kelty Hearts	Escócia
+montrose.png	Montrose	Escócia
+clyde.png	Clyde	Escócia
+stirling-albion.png	Stirling Albion	Escócia
+zenit.png	Zenit	Rússia
+spartak-moscou.png	Spartak Moscou	Rússia
+cska-moscou.png	CSKA Moscou	Rússia
+lokomotiv-moscou.png	Lokomotiv Moscou	Rússia
+dinamo-moscou.png	Dínamo Moscou	Rússia
+krasnodar.png	Krasnodar	Rússia
+rubin-kazan.png	Rubin Kazan	Rússia
+akhmat-grozny.png	Akhmat Grozny	Rússia
+rostov.png	Rostov	Rússia
+krylya-sovetov.png	Krylya Sovetov	Rússia
+orenburg.png	Orenburg	Rússia
+pari-nizhny-novgorod.png	Pari Nizhny Novgorod	Rússia
+sochi.png	Sochi	Rússia
+baltika.png	Baltika	Rússia
+akron-tolyatti.png	Akron Tolyatti	Rússia
+dinamo-makhachkala.png	Dínamo Makhachkala	Rússia
+torpedo-moscou.png	Torpedo Moscou	Rússia
+shinnik-yaroslavl.png	Shinnik Yaroslavl	Rússia
+fakel-voronezh.png	Fakel Voronezh	Rússia
+khimki.png	Khimki	Rússia
+ural.png	Ural	Rússia
+neftekhimik.png	Neftekhimik	Rússia
+chayka.png	Chayka	Rússia
+tekstilshchik.png	Tekstilshchik	Rússia
+spartak-kostroma.png	Spartak Kostroma	Rússia
+chertanovo.png	Chertanovo	Rússia
+yenisey.png	Yenisey	Rússia
+ska-khabarovsk.png	SKA-Khabarovsk	Rússia
+volga.png	Volga	Rússia
+sokol-saratov.png	Sokol Saratov	Rússia
+alania.png	Alania	Rússia
+kuban.png	Kuban	Rússia
+torpedo-vladimir.png	Torpedo Vladimir	Rússia
+zenit-2.png	Zenit-2	Rússia
+lokomotiv-2.png	Lokomotiv-2	Rússia
+dinamo-2.png	Dinamo-2	Rússia
+rubin-2.png	Rubin-2	Rússia
+spartak-2.png	Spartak-2	Rússia
+cska-2.png	CSKA-2	Rússia
+krasnodar-2.png	Krasnodar-2	Rússia
+rostov-2.png	Rostov-2	Rússia
+akhmat-2.png	Akhmat-2	Rússia
+ural-2.png	Ural-2	Rússia
+kaluga.png	Kaluga	Rússia
+lada.png	Lada	Rússia
+orel.png	Orel	Rússia
+zvezda.png	Zvezda	Rússia
+mashuk.png	Mashuk	Rússia
+atletico-nacional.png	Atlético Nacional	Colômbia
+millonarios.png	Millonarios	Colômbia
+junior.png	Junior	Colômbia
+america-de-cali.png	América de Cali	Colômbia
+deportivo-cali.png	Deportivo Cali	Colômbia
+independiente-santa-fe.png	Independiente Santa Fe	Colômbia
+once-caldas.png	Once Caldas	Colômbia
+tolima.png	Tolima	Colômbia
+medellin.png	Medellín	Colômbia
+bucaramanga.png	Bucaramanga	Colômbia
+pasto.png	Pasto	Colômbia
+aguilas-doradas.png	Águilas Doradas	Colômbia
+alianza.png	Alianza	Colômbia
+la-equidad.png	La Equidad	Colômbia
+envigado.png	Envigado	Colômbia
+jaguares.png	Jaguares	Colômbia
+fortaleza-ceif.png	Fortaleza CEIF	Colômbia
+llaneros.png	Llaneros	Colômbia
+cucuta-deportivo.png	Cúcuta Deportivo	Colômbia
+atletico-huila.png	Atlético Huila	Colômbia
+boyaca-chico.png	Boyacá Chicó	Colômbia
+patriotas.png	Patriotas	Colômbia
+real-cartagena.png	Real Cartagena	Colômbia
+union-magdalena.png	Unión Magdalena	Colômbia
+barranquilla-fc.png	Barranquilla FC	Colômbia
+deportivo-pereira.png	Deportivo Pereira	Colômbia
+atletico-bucaramanga-b.png	Atlético Bucaramanga B	Colômbia
+orsomarso.png	Orsomarso	Colômbia
+tigres.png	Tigres	Colômbia
+llaneros-b.png	Llaneros B	Colômbia
+real-santander.png	Real Santander	Colômbia
+cortulua.png	Cortuluá	Colômbia
+valledupar.png	Valledupar	Colômbia
+bogota-fc.png	Bogotá FC	Colômbia
+internacional-de-palmira.png	Internacional de Palmira	Colômbia
+real-soacha.png	Real Soacha	Colômbia
+sporting-barranquilla.png	Sporting Barranquilla	Colômbia
+deportes-quindio.png	Deportes Quindío	Colômbia
+girardot.png	Girardot	Colômbia
+libertad.png	Libertad	Colômbia
+fortaleza-b.png	Fortaleza B	Colômbia
+atletico-nacional-b.png	Atlético Nacional B	Colômbia
+medellin-b.png	Medellín B	Colômbia
+cali-b.png	Cali B	Colômbia
+santa-fe-b.png	Santa Fe B	Colômbia
+millonarios-b.png	Millonarios B	Colômbia
+junior-b.png	Junior B	Colômbia
+tolima-b.png	Tolima B	Colômbia
+once-caldas-b.png	Once Caldas B	Colômbia
+pasto-b.png	Pasto B	Colômbia
+alianza-b.png	Alianza B	Colômbia
+equidad-b.png	Equidad B	Colômbia
+envigado-b.png	Envigado B	Colômbia
+aguilas-b.png	Águilas B	Colômbia
+penarol.png	Peñarol	Uruguai
+defensor-sporting.png	Defensor Sporting	Uruguai
+danubio.png	Danubio	Uruguai
+montevideo-wanderers.png	Montevideo Wanderers	Uruguai
+river-plate-uru.png	River Plate (URU)	Uruguai
+racing-uru.png	Racing (URU)	Uruguai
+cerro-largo.png	Cerro Largo	Uruguai
+boston-river.png	Boston River	Uruguai
+plaza-colonia.png	Plaza Colonia	Uruguai
+progreso.png	Progreso	Uruguai
+juventud.png	Juventud	Uruguai
+cerro.png	Cerro	Uruguai
+miramar-misiones.png	Miramar Misiones	Uruguai
+albion.png	Albion	Uruguai
+rentistas.png	Rentistas	Uruguai
+villa-espanola.png	Villa Española	Uruguai
+sud-america.png	Sud América	Uruguai
+central-espanol.png	Central Español	Uruguai
+torque.png	Torque	Uruguai
+atenas.png	Atenas	Uruguai
+rampla-juniors.png	Rampla Juniors	Uruguai
+deportivo-maldonado.png	Deportivo Maldonado	Uruguai
+oriental.png	Oriental	Uruguai
+uruguay-montevideo.png	Uruguay Montevideo	Uruguai
+cooper.png	Cooper	Uruguai
+ferro-carril.png	Ferro Carril	Uruguai
+tacuarembo.png	Tacuarembó	Uruguai
+artigas.png	Artigas	Uruguai
+nacional-b.png	Nacional B	Uruguai
+penarol-b.png	Peñarol B	Uruguai
+defensor-b.png	Defensor B	Uruguai
+danubio-b.png	Danubio B	Uruguai
+liverpool-b.png	Liverpool B	Uruguai
+wanderers-b.png	Wanderers B	Uruguai
+cerro-b.png	Cerro B	Uruguai
+racing-b.png	Racing B	Uruguai
+progreso-b.png	Progreso B	Uruguai
+juventud-b.png	Juventud B	Uruguai
+boston-river-b.png	Boston River B	Uruguai
+plaza-colonia-b.png	Plaza Colonia B	Uruguai
+albion-b.png	Albion B	Uruguai
+cerro-largo-b.png	Cerro Largo B	Uruguai
+miramar-b.png	Miramar B	Uruguai
+river-b.png	River B	Uruguai
+colo-colo.png	Colo-Colo	Chile
+universidad-de-chile.png	Universidad de Chile	Chile
+universidad-catolica.png	Universidad Católica	Chile
+cobresal.png	Cobresal	Chile
+huachipato.png	Huachipato	Chile
+palestino.png	Palestino	Chile
+union-espanola.png	Unión Española	Chile
+audax-italiano.png	Audax Italiano	Chile
+o-higgins.png	O'Higgins	Chile
+coquimbo-unido.png	Coquimbo Unido	Chile
+nublense.png	Ñublense	Chile
+deportes-iquique.png	Deportes Iquique	Chile
+deportes-la-serena.png	Deportes La Serena	Chile
+cobreloa.png	Cobreloa	Chile
+union-la-calera.png	Unión La Calera	Chile
+santiago-wanderers.png	Santiago Wanderers	Chile
+deportes-temuco.png	Deportes Temuco	Chile
+magallanes.png	Magallanes	Chile
+deportes-antofagasta.png	Deportes Antofagasta	Chile
+san-luis.png	San Luis	Chile
+curico-unido.png	Curicó Unido	Chile
+deportes-copiapo.png	Deportes Copiapó	Chile
+santiago-morning.png	Santiago Morning	Chile
+san-marcos-de-arica.png	San Marcos de Arica	Chile
+puerto-montt.png	Puerto Montt	Chile
+deportes-recoleta.png	Deportes Recoleta	Chile
+barnechea.png	Barnechea	Chile
+deportes-concepcion.png	Deportes Concepción	Chile
+cobreloa-b.png	Cobreloa B	Chile
+colchagua.png	Colchagua	Chile
+lota-schwager.png	Lota Schwager	Chile
+fernandez-vial.png	Fernández Vial	Chile
+trasandino.png	Trasandino	Chile
+provincial-osorno.png	Provincial Osorno	Chile
+naval.png	Naval	Chile
+deportes-valdivia.png	Deportes Valdivia	Chile
+independiente-de-cauquenes.png	Independiente de Cauquenes	Chile
+iberia.png	Iberia	Chile
+municipal-mejillones.png	Municipal Mejillones	Chile
+san-antonio-unido.png	San Antonio Unido	Chile
+brujas-de-salamanca.png	Brujas de Salamanca	Chile
+deportes-linares.png	Deportes Linares	Chile
+real-san-joaquin.png	Real San Joaquín	Chile
+comunal-cabrero.png	Comunal Cabrero	Chile
+union-san-felipe.png	Unión San Felipe	Chile
+deportes-limache.png	Deportes Limache	Chile
+al-hilal.png	Al-Hilal	Arábia Saudita
+al-nassr.png	Al-Nassr	Arábia Saudita
+al-ittihad.png	Al-Ittihad	Arábia Saudita
+al-ahli.png	Al-Ahli	Arábia Saudita
+al-shabab.png	Al-Shabab	Arábia Saudita
+al-ettifaq.png	Al-Ettifaq	Arábia Saudita
+al-taawoun.png	Al-Taawoun	Arábia Saudita
+al-fateh.png	Al-Fateh	Arábia Saudita
+al-fayha.png	Al-Fayha	Arábia Saudita
+al-raed.png	Al-Raed	Arábia Saudita
+damac.png	Damac	Arábia Saudita
+al-khaleej.png	Al-Khaleej	Arábia Saudita
+al-okhdood.png	Al-Okhdood	Arábia Saudita
+al-riyadh.png	Al-Riyadh	Arábia Saudita
+al-kholood.png	Al-Kholood	Arábia Saudita
+al-qadsiah.png	Al-Qadsiah	Arábia Saudita
+al-orobah.png	Al-Orobah	Arábia Saudita
+al-najma.png	Al-Najma	Arábia Saudita
+al-wehda.png	Al-Wehda	Arábia Saudita
+abha.png	Abha	Arábia Saudita
+al-hazem.png	Al-Hazem	Arábia Saudita
+al-tai.png	Al-Tai	Arábia Saudita
+al-batin.png	Al-Batin	Arábia Saudita
+al-adalah.png	Al-Adalah	Arábia Saudita
+al-faisaly.png	Al-Faisaly	Arábia Saudita
+al-jabalain.png	Al-Jabalain	Arábia Saudita
+al-zulfi.png	Al-Zulfi	Arábia Saudita
+al-arabi.png	Al-Arabi	Arábia Saudita
+al-anwar.png	Al-Anwar	Arábia Saudita
+al-bukiryah.png	Al-Bukiryah	Arábia Saudita
+al-jandal.png	Al-Jandal	Arábia Saudita
+al-diriyah.png	Al-Diriyah	Arábia Saudita
+al-qaisumah.png	Al-Qaisumah	Arábia Saudita
+al-washm.png	Al-Washm	Arábia Saudita
+al-ula.png	Al-Ula	Arábia Saudita
+al-akhdoud.png	Al-Akhdoud	Arábia Saudita
+al-sahel.png	Al-Sahel	Arábia Saudita
+al-ain.png	Al-Ain	Arábia Saudita
+al-ghottah.png	Al-Ghottah	Arábia Saudita
+al-nojoom.png	Al-Nojoom	Arábia Saudita
+al-sharq.png	Al-Sharq	Arábia Saudita
+al-majd.png	Al-Majd	Arábia Saudita
+al-thoqbah.png	Al-Thoqbah	Arábia Saudita
+al-rawdhah.png	Al-Rawdhah	Arábia Saudita
+al-mujazzal.png	Al-Mujazzal	Arábia Saudita
+al-safa.png	Al-Safa	Arábia Saudita
+al-khaldi.png	Al-Khaldi	Arábia Saudita
+al-dahab.png	Al-Dahab	Arábia Saudita
+al-shoulla.png	Al-Shoulla	Arábia Saudita
+al-tuhami.png	Al-Tuhami	Arábia Saudita
+al-hamadah.png	Al-Hamadah	Arábia Saudita
+al-orubah-b.png	Al-Orubah B	Arábia Saudita
+al-faisaly-b.png	Al-Faisaly B	Arábia Saudita
+al-taawoun-b.png	Al-Taawoun B	Arábia Saudita
