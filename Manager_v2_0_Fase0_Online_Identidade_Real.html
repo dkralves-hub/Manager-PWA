@@ -789,20 +789,28 @@ function fixtures(nn,real){ // round robin (nn par; índices >= real são folga)
   for(let r=0;r<nn-1;r++){let m=[];for(let i=0;i<nn/2;i++){const a=t[i],b=t[nn-1-i];if(a<real&&b<real)m.push([a,b])}R.push(m);t.splice(1,0,t.pop())}
   return R.concat(R.map(r=>r.map(([a,b])=>[b,a])));
 }
-function auto(c,manterPos){ // escala automaticamente por slot da formação
+function auto(c,manterPos){ // escala automaticamente por slot da formação, considerando fadiga, idade e lesões
   try{if(c.elenco.some(j=>j.num==null))atribuiNumeros(c)}catch(e){}
   const antes={};c.elenco.forEach(j=>{if(j.tit&&j.px!=null)antes[j.id]=[j.px,j.py,j._g]});
   const form=c.form||"4-4-2";
   const slots=FORMSLOT[form]||FORMSLOT["4-4-2"];
   c.elenco.forEach(j=>{j.tit=false;j.px=null;j.py=null;j._g=null;j._slot=null});
   const nExp=c.elenco.filter(j=>j.expulso).length;
-  const livres=()=>c.elenco.filter(j=>!j.tit&&j.lesao<=0&&!j.expulso&&!(j.suspenso>0));
-  // slots mais restritos primeiro: GOL, depois os demais
+  const ehMeu=c.id===S.meu||!!c.hum;
+  // critério de aptidão estendida: não escala quem está exausto, lesionado ou suspenso
+  const aptoIA=j=>!j.tit&&j.lesao<=0&&!j.expulso&&!(j.suspenso>0)&&j.fat<FAT_LIMITE_CRITICO;
+  const livres=()=>c.elenco.filter(aptoIA);
+  // prioriza jogadores menos cansados e mais jovens (menos desgaste)
   const ordem=slots.map((sl,i)=>i).sort((i,k)=>(slots[i][0]==="GOL"?-1:0)-(slots[k][0]==="GOL"?-1:0));
   ordem.forEach(i=>{
     const [role,x,y]=slots[i];
     const cand=livres().filter(j=>role==="GOL"?j.pos==="GOL":j.pos!=="GOL")
-      .map(j=>({j,sc:af(j.pos,role)*100+fe(j)}))
+      .map(j=>{
+        const fadPenalty=1-(j.fat||0)/300; // mais cansado = menos prioridade
+        const idadeBonus=j.idade<=25?1.05:j.idade>=32?0.95:1;
+        const sc=af(j.pos,role)*100+fe(j)*fadPenalty*idadeBonus;
+        return{j,sc};
+      })
       .filter(o=>role==="GOL"?true:af(o.j.pos,role)>0||true)
       .sort((p,q)=>q.sc-p.sc);
     if(c.elenco.filter(x=>x.tit).length>=11-nExp)return;      // expulsos não são repostos
@@ -811,7 +819,7 @@ function auto(c,manterPos){ // escala automaticamente por slot da formação
   });
   if(manterPos)c.elenco.forEach(j=>{if(j.tit&&antes[j.id]){j.px=antes[j.id][0];j.py=antes[j.id][1];j._g=antes[j.id][2]}});
 }
-function fe(j){const e=j.en==null?100:j.en;const base=j.f+bonusEstrela(j)+habBonus(j)*1.5;return base*(0.7+0.3*e/100)*efPos(j)}
+function fe(j){const e=j.en==null?100:j.en;const fat=j.fat==null?0:j.fat;const base=j.f+bonusEstrela(j)+habBonus(j)*1.5;return base*(0.7+0.3*e/100)*(1-fat/200)*efPos(j)}
 function forcaTime(c,tat){
   const t=c.elenco.filter(j=>j.tit);
   if(!t.length)return 40;
@@ -1297,6 +1305,7 @@ function geraPropostas(){
 function aceitaProp(i){
   const eu=S.clubes[S.meu],p=S.props[i],j=eu.elenco.find(x=>x.id===p.jid);
   if(!j)return;
+  if(ONL&&ONL.on&&ONL.papel==='guest'){if(eu.elenco.length<=16)return aviso("Elenco mínimo: 16 jogadores.");return onlSolicitaOpMercado({tipo:'mercado',subtipo:'aceitaProp',propsIdx:i,operador:ONL.uid});}
   if(eu.elenco.length<=16)return aviso("Elenco mínimo: 16 jogadores.");
   const c=S.clubes[p.clube];
   const resc=rescisaoDe(j,p.valor);eu.caixa+=p.valor-resc;finRec('Venda de jogadores',p.valor);finDesp('Rescisões',resc);eu.elenco=eu.elenco.filter(x=>x.id!==j.id);j.tit=false;j.gols=0;c.elenco.push(j);
@@ -1431,6 +1440,9 @@ const NIVEIS_EST=[
  {n:"Estádio simples",cap:8000,custo:0},{n:"Arquibancadas modernizadas",cap:16000,custo:3000000},
  {n:"Estádio com cobertura",cap:26000,custo:7000000},{n:"Arena moderna",cap:38000,custo:15000000},
  {n:"Super arena",cap:52000,custo:30000000},{n:"Estádio de elite",cap:70000,custo:60000000}];
+const MAX_NIVEL_EST=NIVEIS_EST.length-1;            // nível máximo de evolução do estádio
+const OBRA_NIVEL_RODADAS=3;                          // rodadas de partida para concluir uma ampliação de nível
+const OBRA_CONFORTO_RODADAS=2;                       // rodadas de partida para concluir um nível de conforto
 function est(c){if(!c.est){const a=arenaDe(c);c.est={nivel:0,preco:Math.round(20+Math.max(0,Math.min(60,c.forca-20))*0.9),conforto:0,base:a.cap,nome:a.nome}}if(!c.est.base){const a=arenaDe(c);c.est.base=a.cap;c.est.nome=a.nome}return c.est}
 function capEst(c){const e=est(c);return Math.round(e.base*(1+e.nivel*0.18))}
 function pubJogo(c,adversario){ // público de um jogo em casa
@@ -1457,17 +1469,38 @@ function abaEst(){
     <small class="mu" style="display:block;margin:6px 0">Estraga com os jogos em casa (e mais com chuva) e se recupera aos poucos. Gramado ruim aumenta lesões; péssimo também derruba a precisão dos chutes.</small>
     <button class="sm" onclick="gramadoMelhora()">🔧 Reformar o gramado (+12)</button></div>`;
   h+=`<div class="card"><div class="tag" style="margin-bottom:6px">Melhorias</div>`;
-  if(prox)h+=`<div class="upL"><div><b>Ampliar: ${prox.n}</b><small>Capacidade ${Math.round(e.base*(1+(e.nivel+1)*0.18)).toLocaleString("pt-BR")}</small></div><button class="sm" onclick="melhoraEst('nivel')">${R$(prox.custo)}</button></div>`;
-  else h+=`<div class="mu" style="padding:6px 0">Estádio no nível máximo.</div>`;
+  if(e.obra){
+    const dur=e.obra.tipo==='nivel'?OBRA_NIVEL_RODADAS:OBRA_CONFORTO_RODADAS;
+    const pct=Math.round(100*(1-Math.max(0,e.obra.restante)/Math.max(1,dur)));
+    const lbl=e.obra.tipo==='nivel'?(prox?`Ampliar: ${prox.n}`:'Ampliar estádio'):'Conforto e serviços';
+    h+=`<div class="upL"><div><b>Obra em andamento: ${lbl}</b><small>conclui em ${e.obra.restante} rodada(s) de partida</small></div><div class="vb"><i style="width:${pct}%;background:var(--ac)"></i><b>${pct}%</b></div><button class="sm s" disabled>Aguarde a conclusão</button></div>`;
+  }else if(e.nivel>=MAX_NIVEL_EST){
+    h+=`<div class="mu" style="padding:6px 0">Estádio no nível máximo de evolução.</div>`;
+  }else{
+    h+=`<div class="upL"><div><b>Ampliar: ${prox.n}</b><small>Capacidade ${Math.round(e.base*(1+(e.nivel+1)*0.18)).toLocaleString("pt-BR")}</small></div><button class="sm" onclick="melhoraEst('nivel')">${R$(prox.custo)}</button></div>`;
+  }
   const cc=1500000*(e.conforto+1);
-  h+=e.conforto<5?`<div class="upL"><div><b>Conforto e serviços</b><small>Mais público e renda (+4% por nível)</small></div><button class="sm" onclick="melhoraEst('conforto')">${R$(cc)}</button></div>`:'<div class="mu" style="padding:6px 0">Conforto no máximo.</div>';
+  if(e.conforto>=5){
+    h+=`<div class="mu" style="padding:6px 0">Conforto no máximo.</div>`;
+  }else if(e.obra){
+    h+=`<div class="mu" style="padding:6px 0">Conforto em obras: aguarde a obra em andamento.</div>`;
+  }else{
+    h+=`<div class="upL"><div><b>Conforto e serviços</b><small>Mais público e renda (+4% por nível)</small></div><button class="sm" onclick="melhoraEst('conforto')">${R$(cc)}</button></div>`;
+  }
   return h+`</div>`;
 }
 function melhoraEst(t){
   const eu=S.clubes[S.meu],e=est(eu);
-  const custo=t==='nivel'?NIVEIS_EST[e.nivel+1].custo:1500000*(e.conforto+1);
+  if(ONL&&ONL.on&&ONL.papel==='guest')return onlSolicitaOpMercado({tipo:'estadio',subtipo:t,operador:ONL.uid});
+  const custo=t==='nivel'?(e.nivel>=MAX_NIVEL_EST?null:NIVEIS_EST[e.nivel+1].custo):1500000*(e.conforto+1);
+  if(custo==null)return aviso("Seu estádio já atingiu o nível máximo de evolução.");
   if(eu.caixa<custo)return aviso("Caixa insuficiente para a obra.");
-  confirma(`Investir ${R$(custo)} nesta melhoria?`,()=>{eu.caixa-=custo;finDesp('Estádio (obras)',custo);if(t==='nivel')e.nivel++;else e.conforto++;save();render()});
+  if(e.obra)return aviso("Já há uma obra em andamento no estádio. Aguarde a conclusão.");
+  confirma(`Investir ${R$(custo)} nesta melhoria?\nA obra leva ${t==='nivel'?OBRA_NIVEL_RODADAS:OBRA_CONFORTO_RODADAS} rodada(s) de partida para ser concluída.`,()=>{
+    eu.caixa-=custo;finDesp('Estádio (obras)',custo);
+    e.obra={tipo:t,restante:t==='nivel'?OBRA_NIVEL_RODADAS:OBRA_CONFORTO_RODADAS};
+    save();render();
+  });
 }
 // Banco
 function abaBanco(){
@@ -3156,7 +3189,6 @@ function agendaCopasTodas(){
 function agendaMonta(){
   const T=S.fixt.length;
   const n={cn:S.cn?cnTotalFases():0,cl:S.cl?13:0,el:S.el?13:0,lb:S.lb?13:0,sa:S.sa?13:0};
-  // só ocupam datas do usuário as competições em que o clube joga: as outras não precisam de data própria
   const meus=agendaCompetidores();
   const comps=meus.filter(k=>n[k]>0);
   const janela={cn:[.06,.66],sa:[.11,.86],lb:[.10,.82],el:[.09,.92],cl:[.08,.98]};
@@ -3175,14 +3207,45 @@ function agendaMonta(){
     if(p>=0)slots[p]={comp:a.k,idx:a.j};
   });
   let lg=0;for(let i=0;i<total;i++)if(!slots[i])slots[i]={comp:"liga",idx:lg++};
-  // garante ordem interna crescente de cada competição (idx)
   const cont={};slots.forEach(sl=>{cont[sl.comp]=cont[sl.comp]||0;sl.idx=cont[sl.comp]++});
-  // calendário: temporada de 12 meses começando em 1º de agosto, 2 datas por semana (qua e dom) ao longo do ano
-  S.agenda=slots.map((sl,i)=>{
-    const diaAno=Math.floor(i*(300/Math.max(1,total-1)));       // distribui em ~300 dias (ago → mai)
-    const dt=new Date(2026+(S.temp-1)+0,7,1+diaAno);
-    return{comp:sl.comp,idx:sl.idx,mes:dt.getMonth(),dia:dt.getDate(),ano:dt.getFullYear(),dow:dt.getDay(),res:null,adv:null,casa:null};
-  });
+
+  // ===== CALENDÁRIO REALISTA =====
+  // Temporada começando em 1º de agosto, com jogos às quartas e domingos (2 datas por semana).
+  // Respeita Datas FIFA (datas sem jogos de clube: a cada ~6 rodadas há uma data FIFA livre).
+  // Mínimo de 3 dias de descanso entre jogos. Máximo de 2 jogos consecutivos.
+  // Reorganiza automaticamente para evitar conflitos e excesso de jogos.
+  const DIAS_POR_SEMANA=7;
+  const DIAS_DESCANSO_MIN=3;       // mínimo de dias entre jogos
+  const MAX_JOGOS_SEGUIDOS=2;      // máximo de jogos consecutivos sem descanso
+  const DATAS_FIFA_CADA=6;         // a cada 6 rodadas há uma data FIFA (sem jogos de clube)
+  
+  const agenda=[];let diaAno=1;let jogosSeguidos=0;let desdeFIFA=0;
+  const dataInicial=new Date(2026+(S.temp-1),7,1); // 1º de agosto
+  let ultimoJogoDia=-999; // último dia em que houve jogo
+
+  function ehDataFIFA(diaAnoRef){
+    // Datas FIFA: a cada DATAS_FIFA_CADA rodadas de jogos, uma data livre
+    return desdeFIFA>=DATAS_FIFA_CADA;
+  }
+
+  function adicionarData(comp,idx){
+    // evita jogar em dias muito próximos (descanso mínimo)
+    while(diaAno-ultimoJogoDia<DIAS_DESCANSO_MIN&&ultimoJogoDia>=0)diaAno++;
+    // se há muitos jogos seguidos, força uma data de descanso
+    if(jogosSeguidos>=MAX_JOGOS_SEGUIDOS){
+      diaAno+=2;jogosSeguidos=0;desdeFIFA=0;
+    }
+    // data FIFA: não há jogo de clube
+    if(ehDataFIFA(diaAno)){
+      diaAno+=3;jogosSeguidos=0;desdeFIFA=0;
+    }
+    const dt=new Date(dataInicial);dt.setDate(dt.getDate()+diaAno-1);
+    agenda.push({comp:comp,idx:idx,mes:dt.getMonth(),dia:dt.getDate(),ano:dt.getFullYear(),dow:dt.getDay(),res:null,adv:null,casa:null,diaAno});
+    ultimoJogoDia=diaAno;jogosSeguidos++;desdeFIFA++;diaAno+=DIAS_DESCANSO_MIN;
+  }
+
+  slots.forEach(sl=>adicionarData(sl.comp,sl.idx));
+  S.agenda=agenda;
   S.dia=0;
 }
 function cnTotalFases(){ // quantas datas a Copa nacional ocupa para o meu clube nesta temporada
@@ -3206,6 +3269,23 @@ function agendaAvanca(){
     const real=S._clbak?S._clbak.clubes[S._clbak.meu]:S.clubes[S.meu];
     if(real&&S.agenda&&S.dia<S.agenda.length)recuperaParaProximoJogo(real);
   }catch(e){}
+  try{tickObraEstadio()}catch(e){}                     // avança as obras dos estádios (1 tick por data de partida)
+}
+function tickObraEstadio(){                            // concluí­veis por rodadas de partida; só o anfitrião aplica no online
+  if(!S||!S.clubes)return;
+  let mudou=false;
+  S.clubes.forEach(c=>{
+    if(!c)return;
+    const e=est(c);
+    if(!e||!e.obra)return;
+    e.obra.restante--;
+    if(e.obra.restante<=0){
+      if(e.obra.tipo==='nivel'){if(e.nivel<MAX_NIVEL_EST)e.nivel++;}else{e.conforto++;}
+      delete e.obra;
+      mudou=true;
+    }
+  });
+  if(mudou)save();
 }
 function agendaRegistra(res,adv,casa){const d=S.agenda&&S.agenda[S.dia];if(d){d.res=res;d.adv=adv;d.casa=casa}}
 
@@ -3624,6 +3704,7 @@ function atualizaProgBusca(){
 
 function compraRaro(k){
   const it=(S.mercado||[])[k];if(!it||it.t!=="raro")return;const j=it.j,eu=S.clubes[S.meu];
+  if(ONL&&ONL.on&&ONL.papel==='guest'){if(elencoCheio(eu))return avisoCheio();return onlSolicitaOpMercado({tipo:'mercado',subtipo:'compraRaro',mercadoIdx:k,operador:ONL.uid});}
   if(elencoCheio(eu))return avisoCheio();
   const pedido=Math.round(j.val);
   pergunta(`Oferta por ${j.nome} (em mil R$).\nVem de: ${j.origem} (${j.paisOrigem}).\nPreço pedido: ${Math.round(pedido/1000)} mil`,Math.round(pedido*.95/1000),o=>{
@@ -3646,6 +3727,7 @@ function compraRaro(k){
 function negociaCompraExt(pais,div,idx,id){
   const {cl,j}=acharJogadorExt(pais,div,idx,id);if(!j)return;
   const eu=S.clubes[S.meu];
+  if(ONL&&ONL.on&&ONL.papel==='guest'){if(elencoCheio(eu))return avisoCheio();const pedido=precoPedido(cl,j);return onlSolicitaOpMercado({tipo:'mercado',subtipo:'compra',alvo:{pais,div,idx,id},operador:ONL.uid,dados:{oferta:Math.round(pedido*0.9/1000)*1000,anos:3}});}
   if(elencoCheio(eu))return avisoCheio();
   const pedido=precoPedido(cl,j);
   pergunta(`Oferta por ${j.nome} (em mil R$).\nPreço pedido: ${Math.round(pedido/1000)} mil`,Math.round(pedido*.9/1000),o=>{
@@ -3677,6 +3759,7 @@ function chanceEmprestimo(cl,j,taxa){
 function negociaEmprestimoExt(pais,div,idx,id){
   const {cl,j}=acharJogadorExt(pais,div,idx,id);if(!j)return;
   const eu=S.clubes[S.meu];
+  if(ONL&&ONL.on&&ONL.papel==='guest'){if(elencoCheio(eu))return avisoCheio();return onlSolicitaOpMercado({tipo:'mercado',subtipo:'emprestimo',alvo:{pais,div,idx,id},operador:ONL.uid,dados:{taxa:Math.round(taxaEmprestimo(cl,j))}});}
   if(elencoCheio(eu))return avisoCheio();
   const t0=taxaEmprestimo(cl,j);
   pergunta(`Empréstimo de ${j.nome} por 1 ano.\nTaxa de empréstimo sugerida: ${Math.round(t0/1000)} mil.\nOferta de taxa (em mil R$):`,Math.round(t0/1000),o=>{
@@ -3697,7 +3780,9 @@ function negociaEmprestimoExt(pais,div,idx,id){
 }
 function exerceCompra(i){
   const e=(S.emprest||[])[i];if(!e||e.sentido!=="entrada")return;
-  const eu=S.clubes[S.meu],j=eu.elenco.find(x=>x.id===e.jid);if(!j)return aviso("Jogador não está mais no elenco.");
+  const eu=S.clubes[S.meu];
+  if(ONL&&ONL.on&&ONL.papel==='guest'){const j=eu.elenco.find(xx=>xx.id===e.jid);if(!j)return aviso("Jogador não está mais no elenco.");return onlSolicitaOpMercado({tipo:'mercado',subtipo:'exerceCompra',emprestIdx:i,operador:ONL.uid});}
+  const j=eu.elenco.find(x=>x.id===e.jid);if(!j)return aviso("Jogador não está mais no elenco.");
   if(eu.caixa<e.compra)return aviso("Caixa insuficiente para exercer a opção de compra.");
   confirma(`Comprar ${j.nome} definitivamente por ${R$(e.compra)}?`,()=>{
     eu.caixa-=e.compra;finDesp('Compra de jogadores',e.compra);j.emprestado=false;delete j.donoPais;delete j.donoDiv;delete j.donoIdx;delete j.donoNome;j.ct=3;
@@ -3719,6 +3804,7 @@ function emprestaMeu(id){
 function confirmaEmprestaMeu(k){
   fechaDlg();
   const o=window._ofs[k],eu=S.clubes[S.meu],j=eu.elenco.find(x=>x.id===window._jid);if(!j)return;
+  if(ONL&&ONL.on&&ONL.papel==='guest')return onlSolicitaOpMercado({tipo:'mercado',subtipo:'emprestaMeu',operador:ONL.uid,dados:{jid:j.id,alvo:o.c.nome,taxa:o.taxa,compra:o.compra}});
   confirma(`Emprestar ${j.nome} ao ${o.c.nome} por 1 ano?\nVocê recebe ${R$(o.taxa)}.\nOpção de compra deles: ${R$(o.compra)}.`,()=>{
     eu.caixa+=o.taxa;finRec('Empréstimo de jogadores',o.taxa);
     eu.elenco=eu.elenco.filter(x=>x.id!==j.id);
@@ -3780,6 +3866,31 @@ const HAB_POS={
 };
 const HAB_GRUPO={Finalização:"gol",Cabeceio:"gol","Chute longo":"gol",Velocidade:"criar",Drible:"criar",Passe:"criar","Visão de jogo":"criar",Cruzamento:"criar","Passe longo":"criar","Saída de bola":"criar",
   Desarme:"defesa",Marcação:"defesa",Antecipação:"defesa",Reflexos:"goleiro",Posicionamento:"goleiro","Jogo aéreo":"goleiro",Pênaltis:"goleiro",Resistência:"energia"};
+
+// ===== SISTEMA DE CANSAÇO, IDADE E LESÕES (nova camada) =====
+// fat: fadiga acumulada (0-100). Quanto maior, mais desgaste por jogo e menos rendimento.
+// lesTipo/lesGravidade: tipo e gravidade da lesão (1-5). Tempo de recuperação varia.
+// jogosSeguidos: contador de partidas consecutivas jogadas.
+// minJogadosTemp: minutos jogados na temporada (para controle de carga).
+// cartAmarelosTemp/cartVermelhos: cartões acumulados na temporada (para suspensão automática).
+const FAT_POR_JOGO_TITULAR=18;   // fadiga base por partida como titular
+const FAT_POR_JOGO_RESERVA=6;    // fadiga base por partida como reserva (não entra em campo)
+const FAT_MINUTO_JOGADO=0.25;    // fadiga por minuto jogado
+const FAT_RECUPERACAO_POR_DIA=12; // recuperação de fadiga por dia de descanso
+const FAT_LIMITE_ALERTA=60;      // acima disso o jogador fica "cansado"
+const FAT_LIMITE_CRITICO=85;     // acima disso o risco de lesão dispara
+const FAT_IDADE_JOVEM=25;        // abaixo: recupera mais rápido, cansa menos
+const FAT_IDADE_VETERANO=32;     // acima: cansa mais rápido, recupera menos, mais lesões
+const FAT_FATOR_IDADE_JOVEM=0.75;   // multiplicador de desgaste para jovens
+const FAT_FATOR_IDADE_VETERANO=1.35;// multiplicador de desgaste para veteranos
+const FAT_RECUP_IDADE_JOVEM=1.35;   // multiplicador de recuperação para jovens
+const FAT_RECUP_IDADE_VETERANO=0.70;// multiplicador de recuperação para veteranos
+const LES_TEMPO_POR_GRAVIDADE=[0,1,2,4,7,12]; // jogos de afastamento por gravidade (1..5)
+const LES_TIPOS=["Lesão muscular","Entorse","Contusão","Distensão","Lesão no ligamento"];
+function fatorIdadeDesgaste(j){const id=j.idade||18;if(id<=FAT_IDADE_JOVEM)return FAT_FATOR_IDADE_JOVEM;if(id>=FAT_IDADE_VETERANO)return FAT_FATOR_IDADE_VETERANO;return 1;}
+function fatorIdadeRecuperacao(j){const id=j.idade||18;if(id<=FAT_IDADE_JOVEM)return FAT_RECUP_IDADE_JOVEM;if(id>=FAT_IDADE_VETERANO)return FAT_RECUP_IDADE_VETERANO;return 1;}
+function riscoLesaoPorIdade(j){const id=j.idade||18;if(id<=FAT_IDADE_JOVEM)return 0.75;if(id>=FAT_IDADE_VETERANO)return 1.45;return 1;}
+function garantirCamposFadiga(j){if(j==null)return;j.fat=(j.fat==null?0:j.fat);j.lesTipo=j.lesTipo||null;j.lesGravidade=j.lesGravidade||0;j.jogosSeguidos=(j.jogosSeguidos==null?0:j.jogosSeguidos);j.minJogadosTemp=(j.minJogadosTemp==null?0:j.minJogadosTemp);j.cartAmarelosTemp=(j.cartAmarelosTemp==null?0:j.cartAmarelosTemp);j.cartVermelhos=(j.cartVermelhos==null?0:j.cartVermelhos);j.descansoDias=(j.descansoDias==null?0:j.descansoDias);}
 
 // ===== PAPÉIS (funções) DOS JOGADORES — características reais por posição (v36) =====
 // Cada papel: [nome, [2 habilidades ideais], peso]. Perfis coerentes dominam; uma minoria sai com combinação ruim.
@@ -3853,16 +3964,19 @@ function criaJogadorFixo(pos,alvoF,rg,idadeFixa,anoNasc,nac){
   const f=Math.max(15,Math.min(100,Math.round(alvoF)));
   // potencial: raros chegam a 100; maioria perto da força atual para a idade
   const r=rg();
+  // MUITO MAIS ESTRELAS: chances aumentadas de potencial diferenciado
   let pot;
   if(idade>=30)pot=f;
-  else if(r<.004)pot=92+Math.floor(rg()*9);
-  else if(r<.04)pot=Math.min(100,f+14+Math.floor(rg()*16));
-  else if(r<.25)pot=Math.min(100,f+6+Math.floor(rg()*12));
+  else if(r<.025)pot=92+Math.floor(rg()*9);           // 2,5% de super-craque (pot 92-100)
+  else if(r<.12)pot=Math.min(100,f+14+Math.floor(rg()*16)); // 9,5% de craque (pot alto)
+  else if(r<.30)pot=Math.min(100,f+6+Math.floor(rg()*12)); // 18% de promessa
   else pot=Math.min(100,f+Math.floor(rg()*7));
   if(idade>=26)pot=Math.min(pot,f+Math.max(0,Math.floor((30-idade)*1.2)));
   const hb=sorteiaHab(pos,rg);
-  return{id:"j"+Math.floor(rg()*1e9).toString(36)+Math.floor(rg()*1e9).toString(36),nome:pick2(SILABAS1)+pick2(SILABAS2)+" "+pick2(SOBRE),pos,f,pot,idade,
+  const j={id:"j"+Math.floor(rg()*1e9).toString(36)+Math.floor(rg()*1e9).toString(36),nome:pick2(SILABAS1)+pick2(SILABAS2)+" "+pick2(SOBRE),pos,f,pot,idade,
     sal:salarioDe(f),val:valorDe(f,idade,pot),gols:0,art:0,lesao:0,tit:false,ct:1+Math.floor(rg()*4),hum:30+Math.floor(rg()*40),en:100,hab:hb.hab,habCat:hb.cat,papel:hb.papel,nac:nac||""};
+  garantirCamposFadiga(j);
+  return j;
 }
 // ===== PRECIFICAÇÃO (v38) =====
 // Valor de mercado (R$) de um jogador de 26 anos de LIGA FORTE (Europa): F30 ≈ 0,6 mi · F40 ≈ 3,5 mi · F50 ≈ 12 mi · F60 ≈ 30 mi · F70 ≈ 70 mi · F80 ≈ 140 mi · F100 ≈ 350 mi.
@@ -3968,18 +4082,27 @@ function clubeParaJogo(pt){
 // ===== EVOLUÇÃO DE FORÇA (gradual, teto 100) E ARTILHEIRO DA LIGA =====
 function crescimentoJog(j,rg,soMaturacao){
   const f=j.f,pot=j.pot||f,id=j.idade;
+  const minutos=j.minJogadosTemp||0;
+  const jogosTemp=j.jogosSeguidos||0; // aproximação de jogos na temporada
+  // desempenho: gols e assistências ajudam a evolução
+  const desempenho=(j.golsLiga||0)*0.1+(j.assistLiga||0)*0.08;
   if(id<=28){                                        // evolui até os 28
     const falta=Math.max(0,pot-f);
     const frac=fracAnualIdade(id);
-    if(soMaturacao){                                  // v57: o grosso já veio jogando; aqui só a maturação + o treino de quem jogou pouco
+    // bônus por minutos jogados (até 3000 min = bônus completo)
+    const minBonus=Math.min(1,minutos/3000)*0.3;
+    if(soMaturacao){                                  // v57: maturação + treino de quem jogou pouco
       const treino=j.jogou?0:falta*frac*.45;
-      const g=falta*frac*(1-EVO_PARTE_JOGOS)+(rg()*1.2-0.5)*.5+(j.jogou?0.15:0)+treino+Math.min(j._fama||0,falta)*.25;
+      const g=falta*frac*(1-EVO_PARTE_JOGOS)+(rg()*1.2-0.5)*.5+(j.jogou?0.15:0)+treino+Math.min(j._fama||0,falta)*.25+minBonus+desempenho;
       return Math.max(-.5,Math.min(falta,g));
     }
-    const g=falta*frac+(rg()*1.2-0.5)+(j.jogou?0.25:0)+Math.min(j._fama||0,falta);
+    const g=falta*frac+(rg()*1.2-0.5)+(j.jogou?0.25:0)+Math.min(j._fama||0,falta)+minBonus+desempenho;
     return Math.max(-0.5,Math.min(falta,g));
   }
-  return -(0.5+0.35*(id-29))+(rg()*0.8-0.4);         // aos 29 já só perde (−0,5 aos 29 … −3,5 aos 38)
+  // após os 29, perda natural de atributos (mais acentuada após 32)
+  const perdaBase=-(0.5+0.35*(id-29))+(rg()*0.8-0.4);
+  const perdaIdade=id>=32?perdaBase*1.3:perdaBase;   // veteranos perdem mais rápido
+  return perdaIdade;
 }
 function evoluiElenco(c,chave){
   const rg=rngClube("evo|"+chave+"|"+S.temp);
@@ -3992,7 +4115,8 @@ function evoluiElenco(c,chave){
     j.fReal=Math.max(15,Math.min(100,j.fReal));
     j.val=valorDe(j.f,j.idade,j.pot,j.mk);j.sal=salarioDe(j.f,j.mk);
     if(j.idade>=29&&j.pot>j.f)j.pot=j.f;                // v49: a partir dos 29 não há mais o que crescer
-    j.en=100;j.gols=0;j.golsLiga=0;j.assistCarr=(j.assistCarr||0)+(j.assistLiga||0);j.assistLiga=0;j.jogou=false;j.ac=0;j.vm=0;
+    j.en=100;j.fat=0;j.gols=0;j.golsLiga=0;j.assistCarr=(j.assistCarr||0)+(j.assistLiga||0);j.assistLiga=0;j.jogou=false;j.ac=0;j.vm=0;
+    j.minJogadosTemp=0;j.jogosSeguidos=0;j.descansoDias=0; // reset da carga da temporada
   });
   c.elenco=c.elenco.filter(j=>j.idade<39);
   c.forca=forcaMedia(c);
@@ -4205,17 +4329,24 @@ function pulaFim(){
 
 
 function limpaPartidaEstado(){
-  (S.clubes||[]).forEach(c=>c.elenco.forEach(j=>{j.amarelos=0})); // chamada no fim de QUALQUER partida (liga ou copa)
-  const el=document.getElementById("janelaEscala");if(el)el.remove();
   const todos=[];
-  (S.clubes||[]).forEach(c=>todos.push(...c.elenco));
-  if(S._clbak&&S._clbak.clubes)S._clbak.clubes.forEach(c=>todos.push(...c.elenco));
+  (S.clubes||[]).forEach(c=>{
+    c.elenco.forEach(j=>{
+      todos.push(j);
+      j.amarelos=0; // zerar amarelos do jogo (não da temporada)
+      j.cartAmarelosTemp=(j.cartAmarelosTemp||0)+(j.ac||0); // acumular amarelos da temporada
+      if(j.cartVermelhos==null)j.cartVermelhos=0;
+      garantirCamposFadiga(j);
+    });
+    if(S._clbak&&S._clbak.clubes)S._clbak.clubes.forEach(cc=>cc.elenco.forEach(j=>todos.push(j)));
+  });
+  const el=document.getElementById("janelaEscala");if(el)el.remove();
   // 1) quem estava suspenso e NÃO jogou esta partida já cumpriu: libera
   todos.forEach(j=>{if(j.suspenso>0&&!j.expulso&&!j.acSusp)j.suspenso=Math.max(0,j.suspenso-1)});
   // 2) quem foi expulso agora fica suspenso para a próxima partida
-  todos.forEach(j=>{if(j.expulso){j.suspenso=1;j.expulso=false;j.motSusp='V'}});
+  todos.forEach(j=>{if(j.expulso){j.suspenso=1;j.expulso=false;j.motSusp='V';j.cartVermelhos=(j.cartVermelhos||0)+1}});
   // 3) 3 amarelos acumulados na temporada = 1 jogo de suspensão (o contador recomeça)
-  todos.forEach(j=>{if((j.ac||0)>=3&&!(j.suspenso>0)){j.suspenso=1;j.ac=0;j.acSusp=true;j.motSusp='A'}else if((j.ac||0)>=3){j.ac=0}});
+  todos.forEach(j=>{if((j.cartAmarelosTemp||0)>=3&&!(j.suspenso>0)){j.suspenso=1;j.cartAmarelosTemp=0;j.acSusp=true;j.motSusp='A'}else if((j.cartAmarelosTemp||0)>=3){j.cartAmarelosTemp=0}});
   todos.forEach(j=>{j._acNovo=false;j._vmNovo=false;j.acSusp=false});
   S.expulsaoPendente=false;
 }
@@ -4840,8 +4971,17 @@ function diasDescansoAntes(){
 }
 // Desgaste do jogo (feito logo ao fim da partida) — vale para liga e copas
 function desgasteJogo(j,copa){
-  const base=copa?rnd(14,24):Math.round(rnd(18,28)*poupaEnergia(j)*((j.hab||[]).includes("Resistência")?.8:1));
-  return base;
+  if(!j)return 0;
+  const fad=j.fat==null?0:j.fat;
+  const seq=j.jogosSeguidos==null?0:j.jogosSeguidos;
+  const idadeFator=fatorIdadeDesgaste(j);
+  const resBonus=(j.hab||[]).includes("Resistência")?0.8:1;
+  const base=copa?rnd(14,24):Math.round(rnd(18,28)*poupaEnergia(j)*resBonus);
+  // cansaço acumulado aumenta o desgaste; sequência de jogos também
+  const extraFad=Math.round(fad*0.15);
+  const extraSeq=Math.round(Math.max(0,seq-2)*3);
+  const total=Math.round((base+extraFad+extraSeq)*idadeFator);
+  return Math.max(8,Math.min(60,total));
 }
 // Aplica, ao FIM de um jogo do meu clube, o desgaste de quem jogou e a recuperação de quem não jogou.
 // A recuperação para o PRÓXIMO jogo é aplicada na hora em que a próxima data começa (ver recuperaParaProximoJogo).
@@ -4859,13 +4999,25 @@ function energiaPosJogo(clube,copa){
   try{if(S.pos&&S.pos.a===S.meu){desgasteGramado();if(S.pos.clima==='chuva'||S.pos.clima==='tempestade')S.gramado=Math.max(20,S.gramado-1.5)}}catch(e){}
   clube.elenco.forEach(j=>{
     const e0=j.en==null?100:j.en;
-    if(j.tit){j.en=Math.max(20,e0-desgasteJogo(j,copa));j.ultimoJogoDia=diaAbsolutoAgenda(S.dia)}
+    if(j.tit){
+      const desg=desgasteJogo(j,copa);
+      j.en=Math.max(20,e0-desg);
+      j.ultimoJogoDia=diaAbsolutoAgenda(S.dia);
+      j.jogosSeguidos=(j.jogosSeguidos||0)+1;
+      j.minJogadosTemp=(j.minJogadosTemp||0)+90; // titular joga 90 min
+      j.fat=Math.min(100,(j.fat||0)+FAT_POR_JOGO_TITULAR);
+    }else{
+      j.jogosSeguidos=0; // reserva que não entrou zera a sequência
+      j.fat=Math.max(0,(j.fat||0)-FAT_POR_JOGO_RESERVA);
+    }
     j.jogou=j.jogou||!!j.tit;
     if(j.lesao>0&&!j.lesAoVivo)j.lesao--;
     j.lesAoVivo=false;j.lesionadoJogo=false;
+    garantirCamposFadiga(j);
   });
 }
-// Chamada ao avançar a data do calendário: quem descansou 4+ dias volta a 100%; menos que isso recupera 8 por dia (dias seguidos: 100 → 85 → 70)
+// Chamada ao avançar a data do calendário: recuperação de energia e fadiga por dia de descanso.
+// Idade influencia: jovens recuperam mais rápido, veteranos mais lento.
 function recuperaParaProximoJogo(clube){
   const hoje=diaAbsolutoAgenda(S.dia);if(hoje==null)return;
   clube.elenco.forEach(j=>{
@@ -4873,7 +5025,13 @@ function recuperaParaProximoJogo(clube){
     if(e0>=100)return;
     const ref=(j.ultimoJogoDia!=null)?j.ultimoJogoDia:hoje-7;
     const dias=Math.max(0,hoje-ref);
-    j.en=dias>=4?100:Math.min(100,e0+8*dias);
+    const recDia=FAT_RECUPERACAO_POR_DIA*fatorIdadeRecuperacao(j);
+    j.en=Math.min(100,e0+Math.round(8*dias*fatorIdadeRecuperacao(j)));
+    // recupera fadiga gradualmente com descanso
+    const fat0=j.fat||0;
+    j.fat=Math.max(0,fat0-Math.round(recDia*dias));
+    j.descansoDias=(j.descansoDias||0)+dias;
+    garantirCamposFadiga(j);
   });
 }
 // ---------- notas por jogador e ganho de força a cada 10 jogos ----------
@@ -5551,28 +5709,43 @@ function resolveEscanteio(j,sA,meuAtacando){
 
 
 // ===== LESÕES AO VIVO (v48) =====
-// Risco por jogador em campo e por minuto: 0,0004 × (2 − energia/100) × fator da marcação × fator da idade.
-// ≈ 0,43 lesões por time por jogo (≈ 16 por temporada). O lesionado sai NA HORA; no SEU time o jogo para e abre a mesma tela do vermelho.
+// Risco por jogador em campo e por minuto: fator de cansaço, idade, sequência de jogos e intensidade.
+// Tipos de lesão com gravidade e tempo de recuperação diferentes.
 const LES_MARC={Leve:.85,Normal:1,Forte:1.25};
-function gravidadeLesao(){          // v54: lesões mais curtas (média ≈ 2,3 jogos); as graves continuam raras
-  const r=R();
-  return r<.50?1:r<.75?2:r<.90?rnd(3,4):r<.98?rnd(5,8):rnd(9,14);
+function gravidadeLesao(j){          // gravidade 1-5 com base em cansaço e idade
+  const r=R();const fad=(j&&j.fat||0)/100;const idFator=riscoLesaoPorIdade(j||{idade:18});
+  const base=r*idFator*(1+fad*0.5);
+  if(base<.40)return 1;              // leve: 1 jogo
+  if(base<.65)return 2;              // leve-moderada: 2 jogos
+  if(base<.85)return 3;              // moderada: 4 jogos
+  if(base<.95)return 4;              // grave: 7 jogos
+  return 5;                          // gravíssima: 12 jogos
+}
+function nomeLesaoPorGravidade(g){   // tipo de lesão conforme a gravidade
+  if(g<=1)return NOMES_LESAO[Math.floor(R()*3)]; // pancada, contusão, torção leve
+  if(g<=2)return NOMES_LESAO[3+Math.floor(R()*3)]; // distensão, entorse, dor na coxa
+  return NOMES_LESAO[6+Math.floor(R()*2)];       // ligamento, lesão muscular grave
 }
 const NOMES_LESAO=["torção no tornozelo","lesão muscular","pancada no joelho","distensão","contusão","entorse","dor na coxa","lesão no ligamento"];
 function sorteiaLesaoAoVivo(j,clube,souMeu){
   const L=S.live;if(!L)return null;
   const fLes=(CLIMAS[j.clima||'sol']||CLIMAS.sol).les*fatorGramadoLesao(j.gramado==null?70:j.gramado);
-  if(!j._les)j._les={};const ladoK=clube===S.clubes[j.a]?"a":"b";if(j._les[ladoK])return null;       // v54: no máximo 1 lesão por time por jogo
+  if(!j._les)j._les={};const ladoK=clube===S.clubes[j.a]?"a":"b";if(j._les[ladoK])return null;       // no máximo 1 lesão por time por jogo
   const marc=souMeu?(LES_MARC[TTc(clube).marc]||1):1;
   const em=clube.elenco.filter(x=>x.tit&&!x.expulso&&!(x.lesao>0));
   for(const x of em){
     const en=(x.en==null?100:x.en)/100;
     const fi=x.idade<=22?.85:x.idade<=30?1:1.3;
-    if(R()<.0001*(2-en)*marc*fi*fLes){                                        // v54: ≈ 0,11 lesões por time por jogo (≈ 6 por temporada) — antes 0,45
-      x.lesao=gravidadeLesao();x.lesAoVivo=true;x.lesNome=NOMES_LESAO[Math.floor(R()*NOMES_LESAO.length)];
+    const fadFator=1+(x.fat||0)/150;          // quanto mais cansado, mais risco
+    const seqFator=1+Math.max(0,(x.jogosSeguidos||0)-3)*0.15; // sequência aumenta risco
+    const risco=.0001*(2-en)*marc*fi*fLes*fadFator*seqFator*riscoLesaoPorIdade(x);
+    if(R()<risco){
+      const grav=gravidadeLesao(x);
+      x.lesao=LES_TEMPO_POR_GRAVIDADE[grav];x.lesGravidade=grav;x.lesTipo=nomeLesaoPorGravidade(grav);
+      x.lesAoVivo=true;x.lesNome=x.lesTipo;
       x.tit=false;x.em_campo=false;x.lesionadoJogo=true;j._les[ladoK]=true;           // sai de campo agora
-      if(clube===meuReal()||clube===S.clubes[S.meu])abreVagaLesao(x);                  // v62: a vaga fica na partida, não na marca do jogador
-      j.ev.push({m:L.min,t:"l",lado:clube===S.clubes[j.a]?"a":"b",n:x.nome,jid:x.id,jogos:x.lesao,tipo:x.lesNome});
+      if(clube===meuReal()||clube===S.clubes[S.meu])abreVagaLesao(x);
+      j.ev.push({m:L.min,t:"l",lado:clube===S.clubes[j.a]?"a":"b",n:x.nome,jid:x.id,jogos:x.lesao,tipo:x.lesTipo,gravidade:grav});
       return x;
     }
   }
@@ -6081,7 +6254,8 @@ function abreFichaTecnico(nome,clubeNome){
 // ===== 11 EM CAMPO OBRIGATÓRIO (v55) =====
 // Antes de QUALQUER partida do seu time (liga, copas, Mundial) o jogo exige 11 titulares aptos. Faltou gente (expulso, lesão, suspensão)?
 // Ele completa sozinho com o melhor reserva da mesma posição; se não houver ninguém, bloqueia e leva você à Tática.
-function aptoParaJogar(j){return !(j.lesao>0)&&!(j.suspenso>0)&&!j.expulso&&!j.emprestadoFora}
+function aptoParaJogar(j){return !(j.lesao>0)&&!(j.suspenso>0)&&!j.expulso&&!j.emprestadoFora&&j.fat<FAT_LIMITE_CRITICO}
+function motivoInapto(j){return j.lesao>0?"lesionado ("+j.lesao+"j)":j.suspenso>0?"suspenso":j.expulso?"expulso":j.fat>=FAT_LIMITE_CRITICO?"exausto":"indisponível"}
 function titularesAptos(c){return c.elenco.filter(j=>j.tit&&aptoParaJogar(j))}
 function motivoInapto(j){return j.lesao>0?"lesionado ("+j.lesao+"j)":j.suspenso>0?"suspenso":j.expulso?"expulso":"indisponível"}
 function garante11(c,silencioso){
@@ -7884,11 +8058,38 @@ const _render=render;render=function(){_render.apply(this,arguments);try{humChip
 /* abertura de rodada: lista os técnicos e deixa cada um ajustar o time antes de apitar */
 function humDlgRodada(){
   const L=humLista();
-  modal(`<b>🏁 Antes de começar a rodada</b><div class="mu" style="font-size:12px;margin:4px 0 8px">Cada técnico confere a escalação do seu time. Quando todos estiverem prontos, inicie.</div>`+
-   L.map(c=>{
-     const g=ONL.on&&ONL.papel==='host'&&c.hum.uid?ONL.jog[c.hum.uid]:null,pr=g?(g.pronto&&ONL.merged[c.hum.uid]===ONL.ver):null;
-     return`<div class="clube"><span>${escudo(c,20)} <b>${c.hum.nome}</b>${c.hum.uid?' 🌐':''}<br><small class="mu">${c.nome} · ${c.hum.uid?(pr?'<span class=g>✅ pronto</span>':'<span class=y>⏳ aguardando</span>'):humStatus(c)}</small></span>${c.hum.uid?'':`<button class="sm" onclick="fechaDlg();trocaTecnico(${c.id},true)">Ajustar</button>`}</div>`}).join('')+
-   `<div class="row" style="margin-top:10px"><button class="s" onclick="fechaDlg()">Voltar</button><button onclick="humIniciar()">⚽ Iniciar rodada</button></div>`);
+  const souHost=ONL.on&&ONL.papel==='host';
+  const souConvidado=ONL.on&&ONL.papel==='guest';
+  const meuC=S.clubes[S.meu];
+  const euPronto=souConvidado?ONL.pronto:(souHost?ONL.hostPronto===true:false);
+  const textoBotao=euPronto?'✅ Já estou pronto':'✅ Marcar como Pronto';
+  const todosProntos=onlTodosProntos()&&(souHost?ONL.hostPronto===true:true);
+  let corpo=L.map(c=>{
+    const g=ONL.on&&c.hum.uid?ONL.jog[c.hum.uid]:null;
+    const pr=g?(g.pronto&&ONL.merged[c.hum.uid]===ONL.ver):null;
+    const souEu=c.id===S.meu;
+    const status=pr===null?humStatus(c):(pr?'<span class=g>✅ pronto</span>':'<span class=y>⏳ aguardando</span>');
+    const botoes=souEu&&(souConvidado||souHost)?`<button class="sm" onclick="marcarProntoRodada()">${euPronto?'✅ Pronto':'⏳ Aguardando'}</button>`:(souEu?`<span class="mu">${euPronto?'✅ Você está pronto':'⏳ Você ainda não confirmou'}</span>`:'');
+    return`<div class="clube"><span>${escudo(c,20)} <b>${c.hum.nome}</b>${c.hum.uid?' 🌐':''}${souEu?' (você)':''}<br><small class="mu">${c.nome} · ${status}</small></span>${!souEu&&!c.hum.uid?`<button class="sm" onclick="fechaDlg();trocaTecnico(${c.id},true)">Ajustar</button>`:''}${botoes}</div>`}).join('')+
+   `<div class="row" style="margin-top:10px"><button class="s" onclick="fechaDlg()">Voltar</button>`+
+   (souConvidado||souHost?`<button class="${todosProntos?'':'s'}" onclick="marcarProntoRodada()">${textoBotao}</button>`:'')+
+   (souHost?`<button class="${todosProntos?'':'s'}" onclick="iniciarRodadaConfirmada()" ${!todosProntos?'disabled title="Aguarde todos confirmarem"':''}>⚽ Iniciar rodada</button>`:'')+
+   `</div>`;
+}
+function marcarProntoRodada(){
+  if(ONL.on&&ONL.papel==='guest'){
+    if(ONL.pronto){ONL.pronto=false;try{onlRef('jogadores/'+ONL.uid+'/pronto').set(false)}catch(e){}toast('Você cancelou o "Pronto"');render();return}
+    ONL.pronto=true;try{onlRef('jogadores/'+ONL.uid+'/pronto').set(true)}catch(e){}toast('✅ Você está PRONTO para a rodada');render();return;
+  }
+  if(ONL.on&&ONL.papel==='host'){
+    ONL.hostPronto=!ONL.hostPronto;
+    try{onlRef('meta').update({hostPronto:ONL.hostPronto===true})}catch(e){}
+    toast(ONL.hostPronto?'✅ Você está PRONTO':'⏳ Você não está pronto');render();
+  }
+}
+function iniciarRodadaConfirmada(){
+  if(!onlTodosProntos()||ONL.hostPronto!==true)return aviso('Aguardando confirmação de todos os técnicos.');
+  fechaDlg();S._humOk=true;ONL.forcar=true;comecaRodada();
 }
 function humIniciar(){fechaDlg();S._humOk=true;ONL.forcar=true;comecaRodada()}
 const _comecaRodada=comecaRodada;
@@ -7896,6 +8097,7 @@ comecaRodada=function(){
   if(!S)return;
   let liga=false;try{if(!S.agenda||S.dia==null)agendaMonta();const d=S.agenda&&S.agenda[S.dia];liga=!!(d&&d.comp==='liga')}catch(e){}
   if(!S.live&&ONL.on&&ONL.papel==='guest'){return onlGuestPronto()}
+  if(ONL.on&&ONL.papel==='host'&&!ONL.hostPronto){return humDlgRodada()}
   if(!S.live&&liga&&!S._humOk){
     const precisa=humCount()>1||(ONL.on&&ONL.papel==='host'&&onlConvidados().length);
     if(precisa&&!(ONL.on&&ONL.papel==='host'&&onlTodosProntos()&&humCount()<=1+onlConvidados().length)){return humDlgRodada()}
@@ -7921,7 +8123,7 @@ abaLive=function(){
    Cada amigo entra com o código, escolhe um clube livre e monta o time no
    próprio celular; ao tocar em "Jogar" manda a escalação (pronto). Quando
    todos estiverem prontos o anfitrião inicia a rodada e todos acompanham ao vivo. */
-const ONL={on:false,papel:null,codigo:null,uid:null,nome:null,db:null,jog:{},ver:0,fase:'prep',live:null,forcar:false,offs:[],merged:{},msg:'',ocupado:false,timerLive:null,timerPatch:null};
+const ONL={on:false,papel:null,codigo:null,uid:null,nome:null,db:null,jog:{},ver:0,fase:'prep',live:null,forcar:false,offs:[],merged:{},msg:'',ocupado:false,timerLive:null,timerPatch:null,hostPronto:false};
 const ONL_SDK='10.12.2';
 const FIREBASE_CONFIG=(function(){const c=window.FIREBASE_CONFIG_EXT;return(c&&c.apiKey&&c.databaseURL&&!/COLE_AQUI|SEU-PROJETO/.test(c.apiKey+c.databaseURL))?c:null})(); // vem de firebase-config.js (junto do jogo). Também aceita a config colada em 🔧 Configurar Firebase.
 function onlConvidados(){return Object.keys(ONL.jog).filter(u=>u!==ONL.uid)}
@@ -7997,7 +8199,7 @@ async function onlCriarSala(retomar){
     let cod=retomar&&S.sala?S.sala.codigo:null;
     if(!cod){for(let i=0;i<8;i++){const c=onlCodigo(),sn=await ONL.db.ref('salas/'+c+'/meta').get();if(!sn.exists()){cod=c;break}}}
     if(!cod)throw new Error('Não consegui gerar um código livre. Tente de novo.');
-    ONL.codigo=cod;ONL.papel='host';ONL.on=true;ONL.merged={};
+    ONL.codigo=cod;ONL.papel='host';ONL.on=true;ONL.merged={};ONL.opProcessados=new Set();ONL.hostPronto=false;
     const sn=await onlRef('meta').get();
     if(sn.exists()&&sn.val().host!==ONL.uid)throw new Error('Essa sala pertence a outro anfitrião.');
     ONL.ver=sn.exists()?(sn.val().ver||0):0;
@@ -8006,6 +8208,7 @@ async function onlCriarSala(retomar){
     await onlRef('jogadores/'+ONL.uid).set({nome:S.treinador,clube:S.clubes[S.meu].nome,pronto:true,host:true});
     await onlPushEstado();
     onlOuve('jogadores',onlJogadoresMudou);
+    onlOuve('operacoes',onOperacoesMudou);
     ONL.msg='';save();
   }catch(e){ONL.on=false;ONL.papel=null;ONL.msg='';onlErro(e)}
   ONL.ocupado=false;render();
@@ -8015,7 +8218,7 @@ async function onlPushEstado(){
   const bytes=await onlPut('estado/v'+ver,txt,{rodada:S.rodada,temp:S.temp});
   await onlRef('meta').update({ver,fase:'prep',rodada:S.rodada,temp:S.temp,kb:Math.round(bytes/1024),t:firebase.database.ServerValue.TIMESTAMP});
   if(ver>2)onlRef('estado/v'+(ver-2)).remove().catch(()=>{});
-  ONL.ver=ver;ONL.merged={};
+  ONL.ver=ver;ONL.merged={};ONL.hostPronto=false;
   const u={};Object.keys(ONL.jog).forEach(k=>{if(k!==ONL.uid)u[k+'/pronto']=false});
   if(Object.keys(u).length)await onlRef('jogadores').update(u);
 }
@@ -8133,6 +8336,7 @@ function onlAssume(c,nome){
   onlOuve('jogadores',v=>{ONL.jog=v||{};onlAtualizaTela()});
   onlOuve('ao_vivo',v=>{ONL.live=v;if(v&&S&&S.aba!=='onl'&&!ONL._foiLive){ONL._foiLive=true;S.aba='onl'}if(!v)ONL._foiLive=false;try{render()}catch(e){}});
   onlOuve('meta',onlMetaMudou);
+  onlOuve('operacoes/'+ONL.uid,onlOpResultado);
   render();toast('🌐 Você é o técnico do '+c.nome);
 }
 async function onlMetaMudou(m){
@@ -8152,7 +8356,200 @@ async function onlMetaMudou(m){
     ONL._baixando=false;
   }
   onlAtualizaTela();
+	}
+
+/* ---------- 3.5) OPERAÇÕES DE MERCADO/ESTÁDIO ARBITRADAS PELO ANFITRIÃO ---------- */
+function onlOpNovoId(){return(ONL.uid||'x')+'-'+Date.now()+'-'+Math.floor(Math.random()*1000000)}
+
+// Convidado: monta o formulário e grava a operação em operacoes/<uid> para o anfitrião aplicar.
+function onlSolicitaOpMercado(op){
+  if(!ONL.on||ONL.papel!=='guest')return;
+  op.id=op.id||onlOpNovoId();op.status='pendente';op.erro=null;op.ts=firebase.database.ServerValue.TIMESTAMP;
+  const eu=S.clubes[S.meu];let corpo='';
+  if(op.subtipo==='compraRaro'){
+    const it=(S.mercado||[])[op.mercadoIdx];const j=it&&it.j;const pedido=Math.round(j&&j.val);
+    corpo=`<div class="card"><h3>💰 Contratar ${j.nome} (mercado mundial)</h3><small class="mu">Preço pedido: ${R$(pedido)}</small>
+    <div class="row" style="margin-top:8px"><label>Sua oferta (em mil R$)</label><input id="opVal" type="number" value="${Math.round(pedido*0.95/1000)}"></div>
+    <div class="row" style="margin-top:8px"><label>Contrato (anos)</label><input id="opAnos" type="number" min="1" max="5" value="3"></div>
+    <div class="mu" style="margin-top:8px">O anfitrião aplica a contratação para todos os participantes.</div></div>`;
+  }else if(op.subtipo==='compra'){
+    corpo=`<div class="card"><h3>💰 Proposta de compra</h3><small class="mu">O anfitrião analisa e aplica a contratação em todos os elencos.</small>
+    <div class="row" style="margin-top:8px"><label>Oferta (em mil R$)</label><input id="opVal" type="number" value="${Math.round((op.dados&&op.dados.oferta||0)/1000)}"></div>
+    <div class="row" style="margin-top:8px"><label>Contrato (anos)</label><input id="opAnos" type="number" min="1" max="5" value="${op.dados&&op.dados.anos||3}"></div></div>`;
+  }else if(op.subtipo==='emprestimo'){
+    corpo=`<div class="card"><h3>🔁 Empréstimo de jogador</h3><small class="mu">Taxa que você paga ao clube dono (em mil R$). O anfitrião aplica para todos.</small>
+    <div class="row" style="margin-top:8px"><label>Taxa de empréstimo (em mil R$)</label><input id="opVal" type="number" value="${Math.round((op.dados&&op.dados.taxa||0)/1000)}"></div></div>`;
+  }else if(op.subtipo==='exerceCompra'){
+    corpo=`<div class="card"><h3>📝 Exercer opção de compra</h3><small class="mu">Compra o jogador emprestado definitivamente, pagando a opção ao clube dono. O anfitrião aplica para todos.</small></div>`;
+  }else if(op.subtipo==='emprestaMeu'){
+    corpo=`<div class="card"><h3>🔁 Emprestar seu jogador</h3><small class="mu">Informe o clube destino, taxa e opção de compra (em mil R$). O anfitrião aplica para todos.</small>
+    <div class="row" style="margin-top:8px"><label>Clube destino</label><input id="opAlvo" type="text"></div>
+    <div class="row" style="margin-top:8px"><label>Taxa (em mil R$)</label><input id="opVal" type="number" value="${Math.round((op.dados&&op.dados.taxa||0)/1000)}"></div>
+    <div class="row" style="margin-top:8px"><label>Opção de compra (em mil R$)</label><input id="opCompra" type="number" value="${Math.round((op.dados&&op.dados.compra||0)/1000)}"></div></div>`;
+  }else if(op.subtipo==='aceitaProp'){
+    corpo=`<div class="card"><h3>✅ Aceitar proposta de compra</h3><small class="mu">Vende o jogador ao clube interessado. O anfitrião aplica em ambos os elencos.</small></div>`;
+  }else if(op.subtipo==='nivel'){
+    const e=est(eu);const custo=e.nivel>=MAX_NIVEL_EST?null:NIVEIS_EST[e.nivel+1].custo;
+    corpo=`<div class="card"><h3>🏛 Ampliar estádio</h3><small class="mu">Custo ${custo?R$(custo):'—'} · nível máximo ${MAX_NIVEL_EST} · concluído em ${OBRA_NIVEL_RODADAS} rodada(s).</small></div>`;
+  }else if(op.subtipo==='conforto'){
+    const e=est(eu);const custo=1500000*(e.conforto+1);
+    corpo=`<div class="card"><h3>🏛 Conforto e serviços</h3><small class="mu">Custo ${R$(custo)} · concluído em ${OBRA_CONFORTO_RODADAS} rodada(s).</small></div>`;
+  }
+  op.dados=op.dados||{};ONL.opRascunho=op;
+  fechaDlg();
+  modal(`<h3>💱 Solicitar ao anfitrião</h3>${corpo}<div class="row" style="margin-top:12px"><button class="s" onclick="fechaDlg();ONL.opRascunho=null;">Cancelar</button><button onclick="onlOpEnviar()">Enviar proposta</button></div>`);
 }
+
+function onlOpEnviar(){
+  const op=ONL.opRascunho;if(!op)return;fechaDlg();
+  const vEl=document.getElementById('opVal'),aEl=document.getElementById('opAnos'),cEl=document.getElementById('opCompra'),tEl=document.getElementById('opAlvo');
+  if(vEl){const nv=parseFloat(vEl.value)*1000||0;op.dados.oferta=op.dados.taxa=nv;}
+  if(aEl)op.dados.anos=Math.max(1,Math.min(5,parseInt(aEl.value)||3));
+  if(cEl)op.dados.compra=parseFloat(cEl.value)*1000||0;
+  if(tEl)op.dados.alvo=tEl.value.trim();
+  op.status='pendente';op.erro=null;ONL.opRascunho=null;ONL.opEspera=op.id;
+  onlRef('operacoes/'+ONL.uid).set(op).then(()=>{ONL.opStatus='aguardando';render();toast('Proposta enviada ao anfitrião. Aguarde a aplicação.')}).catch(e=>{ONL.opEspera=null;ONL.opStatus=null;toast('Não foi possível enviar a proposta. Tente novamente.');});
+}
+
+// Convidado: recebe o resultado da sua operação aplicada pelo anfitrião.
+function onlOpResultado(v){
+  if(!ONL.on||ONL.papel!=='guest')return;
+  if(!v||v.status==='pendente'){if(ONL.opEspera)ONL.opStatus='aguardando';return;}
+  if(v.status==='aplicada'){if(ONL.opEspera){ONL.opEspera=null;ONL.opStatus='aplicada';toast('✅ O anfitrião aplicou sua operação. Elenco atualizado.');render();}}
+  else if(v.status==='erro'){if(ONL.opEspera){ONL.opEspera=null;ONL.opStatus='erro';toast(v.erro||'Operação não pôde ser aplicada.');render();}}
+}
+
+// Anfitrião: aplica todas as operações pendentes, grava e publica o estado para todos os participantes.
+function onOperacoesMudou(v){
+  if(ONL.papel!=='host'||!S)return;
+  if(!ONL.opProcessados)ONL.opProcessados=new Set();
+  let algum=false;
+  Object.keys(v||{}).forEach(uid=>{
+    const op=v[uid];if(!op||op.status!=='pendente')return;
+    if(ONL.opProcessados.has(op.id))return;
+    const res=aplicarOpMercado(op,uid);
+    op.status=res.ok?'aplicada':'erro';op.erro=res.erro||null;op.aplicadoEm=Date.now();
+    ONL.opProcessados.add(op.id);algum=true;
+    onlRef('operacoes/'+uid).set(op).catch(()=>{});
+  });
+  if(algum){save();onlPushEstado();try{render()}catch(e){}}
+}
+
+// Anfitrião: executa uma operação de mercado/estádio no clube do operador (identificado por hum.uid).
+// Retorna {ok:true} ou {ok:false,erro}. A aleatoriedade é resolvida aqui (única fonte da verdade).
+function aplicarOpMercado(op,operadorUid){
+  const res={ok:false,erro:null};
+  try{
+    if(!S||!S.clubes)return{ok:false,erro:'Jogo não carregado.'};
+    const c=S.clubes.find(x=>x&&x.hum&&x.hum.uid===operadorUid);
+    if(!c)return{ok:false,erro:'Seu clube não foi encontrado na sala.'};
+    const eu=c;
+    if(op.tipo==='estadio'){
+      const e=est(eu);
+      if(op.subtipo==='nivel'){
+        if(e.nivel>=MAX_NIVEL_EST)return{ok:false,erro:'Estádio já no nível máximo de evolução.'};
+        const custo=NIVEIS_EST[e.nivel+1].custo;
+        if(eu.caixa<custo)return{ok:false,erro:'Caixa insuficiente para a obra.'};
+        if(e.obra)return{ok:false,erro:'Já há uma obra em andamento no estádio.'};
+        eu.caixa-=custo;finDesp('Estádio (obras)',custo);
+        e.obra={tipo:'nivel',restante:OBRA_NIVEL_RODADAS};
+      }else{
+        if(e.conforto>=5)return{ok:false,erro:'Conforto já no máximo.'};
+        const custo=1500000*(e.conforto+1);
+        if(eu.caixa<custo)return{ok:false,erro:'Caixa insuficiente para a obra.'};
+        if(e.obra)return{ok:false,erro:'Já há uma obra em andamento no estádio.'};
+        eu.caixa-=custo;finDesp('Estádio (obras)',custo);
+        e.obra={tipo:'conforto',restante:OBRA_CONFORTO_RODADAS};
+      }
+      return{ok:true};
+    }
+    if(op.tipo!=='mercado')return{ok:false,erro:'Tipo de operação desconhecido.'};
+    if(op.subtipo==='compraRaro'){
+      const k=op.mercadoIdx;const it=(S.mercado||[])[k];if(!it||it.t!=='raro')return{ok:false,erro:'Jogador não está mais disponível no mercado.'};
+      const j=it.j;
+      if(elencoCheio(eu))return{ok:false,erro:'Elenco cheio (máx. '+MAX_ELENCO+').'};
+      const oferta=op.dados&&op.dados.oferta;const anos=op.dados&&op.dados.anos;
+      if(!oferta||oferta<=0)return{ok:false,erro:'Oferta inválida.'};
+      const pedido=Math.round(j.val);
+      if(oferta>eu.caixa)return{ok:false,erro:'Caixa insuficiente.'};
+      if(oferta<pedido*0.85)return{ok:false,erro:'Oferta muito abaixo do pedido.'};
+      if(oferta<pedido&&Math.random()>0.55)return{ok:false,erro:'O vendedor recusou a oferta.'};
+      const sal=Math.round(j.sal*1000*rnd(100,125)/100);
+      eu.caixa-=oferta;finDesp('Compra de jogadores',oferta);
+      const novo={...j,ct:anos,en:100,tit:false,gols:0,raro:false};delete novo.origem;delete novo.paisOrigem;
+      novo.mk=fatorMercado(S.pais,S.div);novo.val=valorDe(novo.f,novo.idade,novo.pot,novo.mk);novo.sal=Math.round(sal/1000);
+      jogadorNovoNoClube(novo);eu.elenco.push(novo);S.mercado.splice(k,1);auto(eu,true);
+      return{ok:true};
+    }
+    if(op.subtipo==='compra'){
+      const alvo=op.alvo||{};const ach=acharJogadorExt(alvo.pais,alvo.div,alvo.idx,alvo.id);if(!ach.j)return{ok:false,erro:'Jogador não encontrado.'};
+      const cl=ach.cl,j=ach.j;
+      if(elencoCheio(eu))return{ok:false,erro:'Elenco cheio (máx. '+MAX_ELENCO+').'};
+      const oferta=op.dados&&op.dados.oferta;const anos=op.dados&&op.dados.anos;
+      if(!oferta||oferta<=0)return{ok:false,erro:'Oferta inválida.'};
+      const pedido=precoPedido(cl,j);
+      if(oferta>eu.caixa)return{ok:false,erro:'Caixa insuficiente.'};
+      if(Math.random()>chanceCompra(cl,j,oferta))return{ok:false,erro:`${cl.nome} recusou a oferta por ${j.nome}.`};
+      const sal=Math.round(j.sal*1000*rnd(100,130)/100);
+      eu.caixa-=oferta;finDesp('Compra de jogadores',oferta);removeDoClubeExt(cl,j);
+      const novo={...j,ct:anos,en:100,tit:false,gols:0};delete novo.px;delete novo.py;delete novo._slot;delete novo._role;
+      jogadorNovoNoClube(novo);eu.elenco.push(novo);if(cl.id!=null&&!cl.ext)cl.caixa+=oferta;
+      auto(eu,true);return{ok:true};
+    }
+    if(op.subtipo==='emprestimo'){
+      const alvo=op.alvo||{};const ach=acharJogadorExt(alvo.pais,alvo.div,alvo.idx,alvo.id);if(!ach.j)return{ok:false,erro:'Jogador não encontrado.'};
+      const cl=ach.cl,j=ach.j;
+      if(elencoCheio(eu))return{ok:false,erro:'Elenco cheio (máx. '+MAX_ELENCO+').'};
+      const taxa=op.dados&&op.dados.taxa;
+      if(!taxa||taxa<=0)return{ok:false,erro:'Taxa inválida.'};
+      const t0=taxaEmprestimo(cl,j);
+      if(taxa>eu.caixa)return{ok:false,erro:'Caixa insuficiente.'};
+      if(Math.random()>chanceEmprestimo(cl,j,taxa))return{ok:false,erro:`${cl.nome} recusou emprestar ${j.nome}.`};
+      const opcao=precoOpcao(cl,j);
+      eu.caixa-=taxa;finDesp('Empréstimos de jogadores',taxa);removeDoClubeExt(cl,j);
+      const novo={...j,en:100,tit:false,emprestado:true,donoPais:alvo.pais,donoDiv:alvo.div,donoIdx:alvo.idx,donoNome:cl.nome};delete novo.px;delete novo.py;delete novo._slot;delete novo._role;
+      jogadorNovoNoClube(novo);eu.elenco.push(novo);
+      if(!S.emprest)S.emprest=[];
+      S.emprest.push({jid:novo.id,nome:novo.nome,sentido:'entrada',clube:cl.nome,pais:alvo.pais,div:alvo.div,idx:alvo.idx,compra:opcao,ate:'fim da temporada',temp:S.temp});
+      auto(eu,true);return{ok:true};
+    }
+    if(op.subtipo==='exerceCompra'){
+      const i=op.emprestIdx;const e2=(S.emprest||[]);const x=e2[i];if(!x||x.sentido!=='entrada')return{ok:false,erro:'Opção de compra não encontrada.'};
+      const j=eu.elenco.find(xx=>xx.id===x.jid);if(!j)return{ok:false,erro:'Jogador não está mais no seu elenco.'};
+      if(eu.caixa<x.compra)return{ok:false,erro:'Caixa insuficiente para exercer a opção de compra.'};
+      eu.caixa-=x.compra;finDesp('Compra de jogadores',x.compra);j.emprestado=false;
+      delete j.donoPais;delete j.donoDiv;delete j.donoIdx;delete j.donoNome;j.ct=3;
+      e2.splice(i,1);auto(eu,true);return{ok:true};
+    }
+    if(op.subtipo==='emprestaMeu'){
+      const jid=op.dados&&op.dados.jid;const j=eu.elenco.find(xx=>xx.id===jid);if(!j)return{ok:false,erro:'Jogador não encontrado no seu elenco.'};
+      if(eu.elenco.length<=16)return{ok:false,erro:'Elenco mínimo: 16 jogadores.'};
+      const taxa=op.dados&&op.dados.taxa;const compra=op.dados&&op.dados.compra;
+      if(!taxa||taxa<=0)return{ok:false,erro:'Taxa inválida.'};
+      const alvoNome=op.dados&&op.dados.alvo;const alvo=alvoNome?S.clubes.find(xx=>xx&&xx.nome===alvoNome):null;
+      if(!alvo)return{ok:false,erro:'Clube destino não encontrado.'};
+      eu.caixa+=taxa;finRec('Empréstimo de jogadores',taxa);
+      eu.elenco=eu.elenco.filter(xx=>xx.id!==jid);
+      const cp={...j,emprestado:true,donoNome:eu.nome,donoMeu:true,tit:false};delete cp.px;delete cp.py;delete cp._slot;delete cp._role;
+      alvo.elenco.push(cp);
+      if(!S.emprest)S.emprest=[];
+      S.emprest.push({jid:j.id,nome:j.nome,sentido:'saida',clube:alvo.nome,clubeId:alvo.id,compra,ate:'fim da temporada',temp:S.temp,jogador:{...j}});
+      auto(eu,true);return{ok:true};
+    }
+    if(op.subtipo==='aceitaProp'){
+      const i=op.propsIdx;const p=(S.props||[])[i];if(!p)return{ok:false,erro:'Proposta não encontrada.'};
+      const j=eu.elenco.find(xx=>xx.id===p.jid);if(!j)return{ok:false,erro:'Jogador não está mais no seu elenco.'};
+      if(eu.elenco.length<=16)return{ok:false,erro:'Elenco mínimo: 16 jogadores.'};
+      const alvo=S.clubes.find(xx=>xx&&xx.id==p.clube)||S.clubes[p.clube];if(!alvo)return{ok:false,erro:'Clube interessado não encontrado.'};
+      const resc=rescisaoDe(j,p.valor);
+      eu.caixa+=p.valor-resc;finRec('Venda de jogadores',p.valor);finDesp('Rescisões',resc);
+      eu.elenco=eu.elenco.filter(xx=>xx.id!==j.id);j.tit=false;j.gols=0;alvo.elenco.push(j);
+      S.props.splice(i,1);auto(eu);return{ok:true};
+    }
+    return{ok:false,erro:'Subtipo de operação não implementado.'};
+  }catch(err){return{ok:false,erro:err.message||'Erro ao aplicar operação.'};}
+}
+
 async function onlEnviaPatch(){
   if(!ONL.on||ONL.papel!=='guest'||!ONL.pronto)return;
   guardaTT();const c=S.clubes[S.meu];
@@ -8173,12 +8570,6 @@ const _save=save;
 save=function(){
   _save.apply(this,arguments);
   if(ONL.on&&ONL.papel==='guest'&&ONL.pronto){clearTimeout(ONL.timerPatch);ONL.timerPatch=setTimeout(()=>onlEnviaPatch().catch(()=>{}),1500)}
-};
-/* o mercado mexe em outros clubes: só no aparelho do anfitrião */
-const _abaMer=abaMer;
-abaMer=function(){
-  if(ONL.on&&ONL.papel==='guest')return`<div class="card"><h3>💱 Mercado</h3><div class="mu" style="margin-top:6px">Nesta versão o mercado de transferências funciona só no aparelho do anfitrião (ele mexe em outros clubes). Peça para o anfitrião fechar a contratação.</div></div>`;
-  return _abaMer.apply(this,arguments);
 };
 
 /* ---- tela 🌐 Online ---- */
