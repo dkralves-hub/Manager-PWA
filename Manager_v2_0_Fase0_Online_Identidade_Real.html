@@ -775,6 +775,7 @@ function realizaElenco(c){
   const rg=rngClube("real|"+c.nome+"|"+(S&&S.seed!=null?S.seed:0));
   const mk=mkDaChave((S?S.pais:"Brasil")+"|"+(S?S.div:0)+"|0");
   const out=arr.map(function(r){
+    if(!Array.isArray(r))return jogDeImport(r,rg,mk);
     const j=criaJogadorFixo(r[1],r[4],rg,null,r[2],r[3]);
     j.nome=r[0];j.real=true;j.nac=r[3]||"";
     j.val=valorDe(j.f,j.idade,j.pot,mk);j.sal=salarioDe(j.f,mk);
@@ -784,7 +785,97 @@ function realizaElenco(c){
   while(out.length<22&&i<ant.length){const g=ant[i++];g.real=false;out.push(g)}
   c.elenco=out.slice(0,30);
   try{atribuiNumeros(c)}catch(e){}
+  try{impPosElenco(c)}catch(e){}
   return true;
+}
+
+// ===== IMPORTADOR DE ELENCOS (JSON/CSV) · grava no navegador, aplica na criação do jogo e em "Reaplicar" =====
+const IMP_KEY="mgr_import_elencos_v1",IMP_JOG={},IMP_EXTRA={};
+const impNorm=s=>String(s==null?"":s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const IMP_POS={gol:"GOL",gk:"GOL",goleiro:"GOL",zag:"ZAG",cb:"ZAG",zagueiro:"ZAG",ld:"LD",rb:"LD",rwb:"LD",lateraldireito:"LD",le:"LE",lb:"LE",lwb:"LE",lateralesquerdo:"LE",vol:"VOL",cdm:"VOL",dm:"VOL",volante:"VOL",mei:"MEI",cm:"MEI",cam:"MEI",am:"MEI",meia:"MEI",mc:"MEI",pd:"PD",rw:"PD",rm:"PD",pontadireita:"PD",pe:"PE",lw:"PE",lm:"PE",pontaesquerda:"PE",ata:"ATA",st:"ATA",cf:"ATA",fw:"ATA",atacante:"ATA",centroavante:"ATA"};
+const impPos=p=>IMP_POS[impNorm(p).replace(/[^a-z]/g,"")]||null;
+const IMP_COL={clube:"clube",time:"clube",nome:"nome",jogador:"nome",pos:"pos",posicao:"pos",pos2:"pos2",secundarias:"pos2",posicoes:"pos2",idade:"idade",nasc:"nasc",nascimento:"nasc",nac:"nac",nacionalidade:"nac",num:"num",numero:"num",camisa:"num",pe:"pe",overall:"f",ovr:"f",f:"f",forca:"f",pot:"pot",potencial:"pot",valor:"valor",salario:"sal",sal:"sal",contrato:"ct",ct:"ct",titular:"tit",ordem:"ordem",capitao:"cap",penalti:"pen",falta:"fal",escanteio:"esc",tecnico:"tec",tecnico_nac:"tecNac",tecnico_estilo:"tecEst",formacao:"form"};
+const impSim=v=>["1","s","sim","x","true","t","y","yes"].includes(impNorm(v));
+function impCSV(txt){
+  const ls=txt.replace(/^\uFEFF/,"").split(/\r?\n/).filter(l=>l.trim());if(ls.length<2)throw new Error("CSV vazio");
+  const d=(ls[0].match(/;/g)||[]).length>(ls[0].match(/,/g)||[]).length?";":",";
+  const cut=l=>{const o=[];let c="",q=false;for(let i=0;i<l.length;i++){const ch=l[i];if(ch==='"'){if(q&&l[i+1]==='"'){c+='"';i++}else q=!q}else if(ch===d&&!q){o.push(c);c=""}else c+=ch}o.push(c);return o.map(x=>x.trim())};
+  const H=cut(ls[0]).map(h=>IMP_COL[impNorm(h).replace(/[ \-]/g,"_")]||null);
+  const cl={};
+  ls.slice(1).forEach(l=>{const v=cut(l),o={};H.forEach((k,i)=>{if(k&&v[i]!=="")o[k]=v[i]});if(!o.clube||!o.nome)return;
+    const kc=impNorm(o.clube),c=cl[kc]=cl[kc]||{clube:o.clube,jogadores:[]};
+    if(o.form)c.formacao=o.form;if(o.tec)c.tecnico={nome:o.tec,nac:o.tecNac,estilo:o.tecEst};
+    const j={nome:o.nome,pos:o.pos,pos2:o.pos2?o.pos2.split(/[|\/]/).map(s=>s.trim()):[],idade:o.idade?+o.idade:null,nasc:o.nasc?+o.nasc:null,nac:o.nac,num:o.num?+o.num:null,pe:o.pe,f:o.f?+o.f:null,pot:o.pot?+o.pot:null,valor:o.valor?+o.valor:null,sal:o.sal?+o.sal:null,ct:o.ct?+o.ct:null,titular:impSim(o.tit),ordem:o.ordem?+o.ordem:null};
+    c.jogadores.push(j);
+    if(impSim(o.cap))c.capitao=o.nome;if(impSim(o.pen))c.penaltis=o.nome;if(impSim(o.fal))c.faltas=o.nome;if(impSim(o.esc))c.escanteios=o.nome});
+  return{clubes:Object.values(cl)};
+}
+function impValida(txt){
+  let d;const s=txt.trim();
+  if(!s)throw new Error("Nada para importar.");
+  d=(s[0]==="{"||s[0]==="[")?JSON.parse(s):impCSV(s);
+  const arr=Array.isArray(d)?d:(d.clubes||[]);if(!arr.length)throw new Error("Sem clubes no arquivo.");
+  const idx={};Object.keys(LIGAS).forEach(p=>LIGAS[p].forEach(dv=>dv.forEach(c=>{idx[impNorm(c[0])]=c[0]})));
+  const ok=[],semClube=[],avisos=[];let nj=0;
+  arr.forEach(o=>{
+    const nome=idx[impNorm(o.clube||o.nome)];if(!nome){semClube.push(o.clube||o.nome||"?");return}
+    const js=[];(o.jogadores||[]).forEach((p,i)=>{
+      const pos=impPos(p.pos),f=+(p.f!=null?p.f:p.overall);
+      if(!p.nome||!pos||!(f>=15&&f<=100)){avisos.push(nome+": linha "+(i+1)+" ignorada ("+(p.nome||"sem nome")+")");return}
+      js.push({nome:String(p.nome),pos,pos2:(p.pos2||[]).map(impPos).filter(Boolean),idade:p.idade?+p.idade:null,nasc:p.nasc?+p.nasc:null,nac:p.nac||"",num:p.num?+p.num:null,pe:({d:"D",e:"E",a:"A",destro:"D",canhoto:"E",ambidestro:"A",r:"D",l:"E",right:"D",left:"E",both:"A"})[impNorm(p.pe)]||null,f:Math.round(f),pot:p.pot?+p.pot:null,valor:p.valor?+p.valor:null,sal:p.sal?+p.sal:null,ct:p.ct?+p.ct:null,titular:!!(p.titular||p.tit),ordem:p.ordem?+p.ordem:null});
+    });
+    if(js.length<11){avisos.push(nome+": só "+js.length+" jogadores válidos (mínimo 11) — ignorado");return}
+    if(js.filter(x=>x.titular).length&&js.filter(x=>x.titular).length!==11)avisos.push(nome+": titulares ≠ 11 — escalação automática será usada");
+    nj+=js.length;ok.push({nome,jog:js,ex:{form:o.formacao||o.formacao_real||null,cap:o.capitao||null,pen:o.penaltis||null,fal:o.faltas||null,esc:o.escanteios||null,tec:o.tecnico||null}});
+  });
+  return{ok,semClube,avisos,nj};
+}
+function jogDeImport(r,rg,mk){
+  const ano=new Date().getFullYear(),idade=r.idade||(r.nasc?ano-r.nasc:null)||(20+Math.floor(rg()*12));
+  const j=criaJogadorFixo(r.pos,r.f,rg,idade,null,r.nac);
+  j.nome=r.nome;j.real=true;j.nac=r.nac||"";j.idade=idade;
+  if(r.pot)j.pot=Math.max(r.f,Math.min(100,r.pot));else j.pot=Math.max(j.pot,r.f);
+  j.val=r.valor||valorDe(j.f,j.idade,j.pot,mk);j.sal=r.sal?Math.max(1,Math.round(r.sal/1000)):salarioDe(j.f,mk);
+  j.ct=r.ct?Math.max(1,Math.min(5,r.ct)):j.ct;if(r.num)j.num=r.num;if(r.pe)j.pe=r.pe;if(r.pos2&&r.pos2.length)j.pos2=r.pos2;
+  j._impTit=!!r.titular;j._ordem=r.ordem;j.mk=mk;return j;
+}
+function impPosElenco(c){
+  const ex=IMP_EXTRA[c.nome];if(!ex)return;
+  if(ex.form&&FORMSLOT[ex.form])c.form=ex.form;
+  c._escReal=true;c._real=ex;
+}
+function impAplicaEsc(c){ // aplica a escalação real UMA vez; devolve true se aplicou
+  if(!c._escReal)return false;c._escReal=false;
+  const ex=c._real||{},tit=c.elenco.filter(j=>j._impTit).sort((a,b)=>(a._ordem||99)-(b._ordem||99));
+  c.elenco.forEach(j=>{j.tit=false});
+  if(tit.length!==11||tit.filter(j=>j.pos==="GOL").length!==1)return false;
+  tit.forEach(j=>{j.tit=true});
+  try{resetPos(c)}catch(e){}
+  const por=n=>n?c.elenco.find(j=>impNorm(j.nome)===impNorm(n)):null;
+  if(S&&S.clubes[S.meu]===c){const a=por(ex.cap);if(a)S.cap=a.id;const p=por(ex.pen);if(p)S.cobPen=p.id;const f=por(ex.fal);if(f)S.cob=f.id;const e=por(ex.esc);if(e)S.esc=e.id;if(c.form)S.form=c.form}
+  return true;
+}
+const _autoOrig=auto;auto=function(c){if(c&&c._escReal&&impAplicaEsc(c))return;return _autoOrig.apply(this,arguments)};
+const _garanteTecOrig=garanteTec;garanteTec=function(){const r=_garanteTecOrig.apply(this,arguments);
+  try{S.clubes.forEach(c=>{const x=IMP_EXTRA[c.nome],t=x&&x.tec;if(t&&t.nome&&c.tec&&!c.tec.meu){c.tec.nome=t.nome;if(t.nac)c.tec.nac=t.nac;if(t.estilo)c.tec.estilo=t.estilo}})}catch(e){}return r};
+function impSalva(){try{localStorage.setItem(IMP_KEY,JSON.stringify({jog:IMP_JOG,ex:IMP_EXTRA}))}catch(e){}}
+function impCarrega(){try{const d=JSON.parse(localStorage.getItem(IMP_KEY)||"null");if(d){Object.assign(IMP_JOG,d.jog||{});Object.assign(IMP_EXTRA,d.ex||{});Object.assign(JOG_REAL,IMP_JOG)}}catch(e){}}
+impCarrega();
+function impExecuta(confirmar){
+  const ta=document.getElementById("impTxt"),out=document.getElementById("impRes");let r;
+  try{r=impValida(ta.value)}catch(e){out.innerHTML='<span class="r">Erro: '+String(e.message).replace(/</g,"&lt;")+'</span>';return}
+  out.innerHTML=`<b class="g">${r.ok.length} clube(s) / ${r.nj} jogadores válidos</b>`+(r.semClube.length?`<br><span class="y">Clubes não reconhecidos (${r.semClube.length}): ${r.semClube.slice(0,8).join(", ")}${r.semClube.length>8?"…":""}</span>`:"")+(r.avisos.length?`<br><small class="mu">${r.avisos.slice(0,6).join("<br>")}${r.avisos.length>6?"<br>+"+(r.avisos.length-6)+" avisos":""}</small>`:"");
+  if(!confirmar)return;
+  r.ok.forEach(c=>{IMP_JOG[c.nome]=c.jog;IMP_EXTRA[c.nome]=c.ex;JOG_REAL[c.nome]=c.jog});
+  impSalva();reaplicaElencos();
+}
+function impLimpa(){confirma("Remover todos os elencos importados deste navegador?",()=>{Object.keys(IMP_JOG).forEach(k=>delete JOG_REAL[k]);Object.keys(IMP_JOG).forEach(k=>delete IMP_JOG[k]);Object.keys(IMP_EXTRA).forEach(k=>delete IMP_EXTRA[k]);try{localStorage.removeItem(IMP_KEY)}catch(e){}render()})}
+function impArquivo(inp){const f=inp.files&&inp.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{document.getElementById("impTxt").value=fr.result;impExecuta(false)};fr.readAsText(f,"utf-8")}
+function impModelo(){
+  const csv="clube;nome;pos;pos2;idade;nac;num;pe;overall;pot;valor;salario;contrato;titular;ordem;capitao;penalti;falta;escanteio;tecnico;tecnico_nac;tecnico_estilo;formacao\n"+
+  "Flamengo;Agustín Rossi;GOL;;30;Argentina;1;D;82;82;15000000;600000;3;sim;1;;;;;Nome do Técnico;Portugal;Ofensiva;4-3-3\n"+
+  "Flamengo;Léo Pereira;ZAG;LD;28;Brasil;4;D;81;82;20000000;700000;3;sim;2;sim;;;;;;;\n";
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv"}));a.download="modelo_elencos.csv";a.click();
 }
 function dbStats(){
   let reais=0,kit=0,est=0,tot=0;
@@ -866,6 +957,7 @@ function aplica(a,b,r){
   if(r.ga>r.gb){a.v++;b.d++;a.pts+=3}else if(r.ga<r.gb){b.v++;a.d++;b.pts+=3}else{a.e++;b.e++;a.pts++;b.pts++}
 }
 function fimTemporada(){
+  try{gerarPropostasTec(true)}catch(e){}
   const t=tabela();
   // (S.tabFinal é calculado depois, junto do acesso/rebaixamento, para sempre representar a 1ª divisão)
   S.hist.push({temp:S.temp,campeao:t[0].nome,meu:t.findIndex(c=>c.id===S.meu)+1});garanteTec();if(t[0].tec)t[0].tec.tit=(t[0].tec.tit||0)+1;S.clubes.forEach(c=>{if(c.tec&&!c.tec.meu)c.tec.hab=Math.max(30,Math.min(95,c.tec.hab+rnd(-3,3)))});
@@ -1347,9 +1439,9 @@ function renova(id){
   if(j&&j.emprestado)return aviso(j.nome+" é emprestado: o contrato é do "+(j.donoNome||"clube dono")+".");
   pergunta(`Renovar ${j.nome}. Quantos anos (1 a 5)?`,2,x=>{
     const a=parseInt(x);if(!a||a<1||a>5)return;
-    const aumento=1+(5-Math.min(j.hum,50)/10)*0.04+a*0.02;
+    const aumento=(1+(5-Math.min(j.hum,50)/10)*0.04+a*0.02)*(moralJ(j)<55?1.2:1);   // insatisfeito pede aumento maior
     const novo=Math.round(j.sal*aumento*1000);
-    if(moralJ(j)<25){return aviso(j.nome+" está descontente (moral "+Math.round(moralJ(j))+") e recusou renovar.")}
+    if(moralJ(j)<40){return aviso(j.nome+" está descontente (moral "+Math.round(moralJ(j))+") e recusou renovar.")}
     if(R()<(j.hum>25?.85:.5))confirma(`${j.nome} aceita renovar por ${a} ano(s).\nNovo salário: ${R$(novo)}/mês`,()=>{j.ct=a;j.sal=novo/1000;save();render()});
     else aviso(j.nome+" recusou renovar.");
   });
@@ -1570,31 +1662,25 @@ function propoeClube(id){
 }
 
 // Sistema de propostas recebidas de outros clubes
-function gerarPropostasTec(){
+function gerarPropostasTec(fimTemp){
   if(!S||!S.clubes)return;
   if(!S.propostasTec)S.propostasTec=[];
-  const eu=S.clubes[S.meu];
-  // Só gera se não houver propostas pendentes e não for temporada 1 muito cedo
-  if(S.propostasTec.some(p=>!p.resposta))return;
-  if(S.temp===1&&S.dia<10)return;
-  const rep=reputacao();
-  // Chance de gerar proposta baseada na reputação
-  if(Math.random()>0.05+(rep-50)*0.005)return;
-  // Escolhe um clube que não seja o seu e que tenha técnico da IA (não humano)
-  const candidatos=S.clubes.filter(c=>c.id!==S.meu && c.tec && !c.tec.meu && c.tec.hab>25);
-  if(!candidatos.length)return;
-  const alvo=candidatos[Math.floor(Math.random()*candidatos.length)];
-  // Chance de aceitação baseada na reputação e força do clube alvo
-  const chanceAceite=Math.max(.1,Math.min(.9,.4+(rep-alvo.forca)/40+(S.dir-50)*0.005));
-  S.propostasTec.push({
-    id:Math.random().toString(36).slice(2),
-    clube:alvo.id,
-    clubeNome:alvo.nome,
-    clubeForca:alvo.forca,
-    pais:S.pais,
-    temp:S.temp,
-    chance:chanceAceite,
-    resposta:null
+  S.propostasTec=S.propostasTec.filter(p=>!p.resposta?(S.temp-(p.temp||S.temp))<1:false);   // expira ofertas antigas
+  const pend=S.propostasTec.filter(p=>!p.resposta);
+  if(pend.length>=3)return;
+  if(S.temp===1&&S.dia<10&&!fimTemp)return;
+  const eu=S.clubes[S.meu],rep=reputacao();
+  const tit=(eu.tec&&eu.tec.tit)||0;
+  const t=tabela(),pos=t.findIndex(c=>c.id===S.meu)+1,desemp=Math.max(0,(t.length-pos)/Math.max(1,t.length-1));   // 0..1
+  let pop=0;try{pop=Math.min(15,pontosFama(eu.nome)/50)}catch(e){}
+  const merito=rep+tit*4+desemp*15+pop;                                    // reputação+títulos+desempenho+popularidade
+  if(R()>(fimTemp?.7:.12)+(merito-50)*.004)return;
+  const cand=S.clubes.filter(c=>c.id!==S.meu&&c.tec&&!c.tec.meu&&!pend.some(p=>p.clube===c.id)&&c.forca<=merito+14)
+    .map(c=>({c,w:Math.max(1,c.forca-20)*(c.forca>=merito-10?1.6:1)})).sort((a,b)=>b.w*R()-a.w*R());
+  const n=Math.min(3-pend.length,fimTemp?2+(merito>75?1:0):1);              // clubes grandes disputam treinadores de destaque
+  cand.slice(0,n).forEach(({c:alvo})=>{
+    S.propostasTec.push({id:Math.random().toString(36).slice(2),clube:alvo.id,clubeNome:alvo.nome,clubeForca:alvo.forca,pais:S.pais,temp:S.temp,
+      chance:Math.max(.25,Math.min(.95,.5+(merito-alvo.forca)/40+(S.dir-50)*.005)),resposta:null,espontanea:true});
   });
   save();
 }
@@ -1690,19 +1776,31 @@ function posPadrao(c){ // garante coordenadas para todos os titulares
     });
   }
 }
-function resetPos(c){ // volta às posições da formação mantendo os titulares atuais
-  const tit=c.elenco.filter(j=>j.tit);
+function resetPos(c){ // reposiciona os titulares na formação (atribuição ótima, preservando lado esquerdo/direito)
   const slots=FORMSLOT[c.form||"4-4-2"]||FORMSLOT["4-4-2"];
-  c.elenco.forEach(j=>{j.px=null;j.py=null;j._slot=null});
-  const usados=new Set();
-  // encaixe guloso: pares (jogador,slot) por maior afinidade
-  const pares=[];
-  tit.forEach(j=>slots.forEach((sl,i)=>{if((sl[0]==="GOL")===(j.pos==="GOL"))pares.push({j,i,sc:af(j.pos,sl[0])})}));
-  pares.sort((a,b)=>b.sc-a.sc);
-  const fei=new Set();
-  pares.forEach(p=>{if(usados.has(p.i)||fei.has(p.j.id))return;usados.add(p.i);fei.add(p.j.id);
-    const sl=slots[p.i];p.j.px=sl[1];p.j.py=sl[2];p.j._slot=p.i;p.j._g=ROLE_GRUPO[sl[0]]});
+  const tit=c.elenco.filter(j=>j.tit);
+  const grp={};tit.forEach(j=>{(grp[j.pos]=grp[j.pos]||[]).push(j)});
+  const pxA=j=>{if(j.px!=null)return j.px;const g=grp[j.pos],k=g.length;
+    if(j.pos==="LE"||j.pos==="PE"&&k===1)return 14;if(j.pos==="LD"||j.pos==="PD")return 86;
+    return k<2?50:20+60*g.indexOf(j)/(k-1)};
+  const pre=new Map(tit.map(j=>[j.id,pxA(j)]));
+  tit.sort((a,b)=>pre.get(a.id)-pre.get(b.id));
+  c.elenco.forEach(j=>{j.px=null;j.py=null;j._slot=null;j._role=null});
+  const n=slots.length,m=tit.length;
+  const sc=(j,i)=>{const s=slots[i];if((s[0]==="GOL")!==(j.pos==="GOL"))return -1e5;return af(j.pos,s[0])*100-Math.abs(pre.get(j.id)-s[1])*.3};
+  const memo=new Map();
+  const go=(k,mask)=>{if(k===m)return[0,[]];const key=k*8192+mask;if(memo.has(key))return memo.get(key);
+    let best=[-1e9,null];
+    for(let i=0;i<n;i++){if(mask&(1<<i))continue;const r=go(k+1,mask|(1<<i));const v=r[0]+sc(tit[k],i);if(v>best[0])best=[v,[i].concat(r[1])]}
+    memo.set(key,best);return best};
+  const res=m<=n&&n<=13?go(0,0)[1]:null;
+  if(res)tit.forEach((j,k)=>{const s=slots[res[k]];j.px=s[1];j.py=s[2];j._slot=res[k];j._g=ROLE_GRUPO[s[0]]});
+  c._formPos=c.form||"4-4-2";
   posPadrao(c);
+}
+function garantePos(c){ // só reposiciona se a formação mudou ou falta coordenada (preserva arrastes manuais)
+  const tit=c.elenco.filter(j=>j.tit);
+  if(c._formPos!==(c.form||"4-4-2")||tit.some(j=>j.px==null||j.py==null))resetPos(c);
 }
 function efPos(j){ // rendimento conforme o encaixe no slot/zona
   if(j._slot!=null&&j._role){return Math.max(.8,0.8+0.2*(af(j.pos,j._role)/10))}
@@ -3953,7 +4051,9 @@ function habBonus(j){
   return m;
 }
 // ----- Estrelas -----
-function estrelaNivel(j){const a=j.art||0;return a>=5?2:a>=3?1:0}   // 0 sem estrela · 1 amarela · 2 vermelha
+function estrelaNivel(j){const a=j.art||0;const n=a>=5?2:a>=3?1:0;
+  const c=(j.f>=85||(j.pot>=90&&j.f>=80))?2:(j.f>=80?1:0);          // craque = overall alto (não depende só de títulos de artilharia)
+  const m=Math.max(n,c,j._estr||0);if(m>(j._estr||0))j._estr=m;return m}   // memorizado: a estrela não some mais   // 0 sem estrela · 1 amarela · 2 vermelha
 function estrelaIcone(j){const n=estrelaNivel(j);return n===2?"🔴★":n===1?"🟡★":""}
 // bônus EM JOGO (a força base não muda)
 function bonusEstrela(j){const n=estrelaNivel(j);return n===2?4:n===1?2:0}
@@ -4597,7 +4697,10 @@ function elencoDoMundo(chave,pico,estado){ // reconstrói os 22 jogadores a part
     const gen=t[5]||0;
     const j=(gen===0&&base)?Object.assign({},base[i]):(gen>0?jogadorDeGeracao(chave,i,gen,pico):Object.assign({},base?base[i]:{}));
     if(t[7]!=null){                                   // identidade congelada: manda sobre o gerador
-      const d=desempacotaIdent(t[7]);j.nome=d.nome;j.hab=d.hab;j.habCat=d.habCat;j.ct=d.ct;j.hum=d.hum;
+      const d=desempacotaIdent(t[7]);const nomeGer=j.nome;j.nome=d.nome;
+      // o pacote só guarda nomes de sílabas fictícias: nomes reais viravam sempre "Rodrigo Silva". Se o gerador (determinístico) produz um nome que não cabe no pacote, ele manda.
+      try{if(nomeGer&&desempacotaIdent(empacotaIdent({nome:nomeGer,hab:[],ct:1,hum:40})).nome!==nomeGer)j.nome=nomeGer}catch(e){}
+      j.hab=d.hab;j.habCat=d.habCat;j.ct=d.ct;j.hum=d.hum;
       j.id=numParaId(t[6]);j.pos=POS22[i];j.papel=null;j.papel=papelDe(j);
     }else{                                            // save antigo: congela agora (próximo save grava)
       t[6]=idParaNum(j.id);t[7]=empacotaIdent(j);
@@ -5762,6 +5865,17 @@ function promoveBase(id){
   jogadorNovoNoClube(j);j.entr=45;eu.elenco.push(j);try{atribuiNumeros(eu)}catch(e){}
   save();render();toast(j.nome+" foi promovido ao elenco!");
 }
+function custoPeneira(){const eu=S.clubes[S.meu];const nv=(eu.estadio&&eu.estadio.nivel)||(S.estadio&&S.estadio.nivel)||1;return Math.round(120000*(1+(eu.forca||50)/50)*(1+nv*.25))}
+function fazPeneira(){
+  const eu=S.clubes[S.meu];if(!eu.base)eu.base=[];const v=custoPeneira();
+  if((eu.caixa||0)<v)return aviso("Caixa insuficiente. A peneira custa "+R$(v)+".");
+  confirma(`Realizar uma peneira por ${R$(v)}?\nVão surgir de 2 a 4 novos jovens talentos.`,()=>{
+    eu.caixa-=v;try{finDesp('Peneira (base)',v)}catch(e){}
+    const antes=eu.base.length,novos=geraBaseClube(eu);
+    if(eu.base.length>30)eu.base=eu.base.sort((a,b)=>b.pot-a.pot).slice(0,30);
+    save();render();toast("Peneira concluída: "+novos.length+" novos talentos!");
+  });
+}
 function dispensaBase(id){
   const eu=S.clubes[S.meu];if(!eu.base)return;
   const j=eu.base.find(x=>x.id===id);if(!j)return;
@@ -5770,7 +5884,8 @@ function dispensaBase(id){
 function abaBase(){
   const eu=S.clubes[S.meu];if(!eu.base)eu.base=[];
   let h=topoAba("🌱","Categoria de base","Novos talentos todo ano. Promova os melhores.",[[eu.base.length,"Na base"],[eu.elenco.length+"/"+MAX_ELENCO,"Elenco"]]);
-  if(!eu.base.length)h+=`<div class="card"><small class="mu">Nenhum garoto na base agora. Novos talentos chegam no fim de cada temporada (2 a 4). Estádio melhor = base melhor.</small></div>`;
+  h+=`<div class="card"><div class="row"><small class="mu">Peneira avulsa: novos talentos quando você quiser, sem esperar a temporada.</small><button class="sm" onclick="fazPeneira()">🔎 Peneira · ${R$(custoPeneira())}</button></div></div>`;
+  if(!eu.base.length)h+=`<div class="card"><small class="mu">Nenhum garoto na base agora. Faça uma peneira ou aguarde o fim da temporada. Estádio melhor = base melhor.</small></div>`;
   else{
     h+=`<div class="card"><small class="mu">Eles não contam nos ${MAX_ELENCO} do elenco. Quem não for decidido em 2 temporadas é liberado.</small><div class="tbL">`;
     [...eu.base].sort((a,b)=>b.pot-a.pot).forEach(j=>{
@@ -7576,7 +7691,7 @@ function abaElenco(){
     const marcas=(j.tit?'<i class="mk t" title="Titular">●</i>':'')+cartaoHTML(j)+lesaoSelo(j)+(j.emprestado?'<i class="mk">🔁</i>':'')+estrelaHTML(j);
     h+=`<div class="elL ${j.tit?'tit':''}" onclick="abreFichaJogador('${j.id}')">
       <span class="elP" style="background:${posCor[j.pos]||'#888'}">${j.pos}</span>
-      <span class="elN"><b><i class="nm">${numDe(j)}</i> <span style="color:${posCorPos(j)}">${j.nome}</b>${marcas}<small>${papelDe(j)} · ${(j.hab||[]).join(' · ')}</small><small style="opacity:.95"><span style="color:${corNivel(moralJ(j))}">😊 ${Math.round(moralJ(j))}</span> · <span style="color:${corNivel(entrosJ(j))}">🤝 ${Math.round(entrosJ(j))}</span>${(j.golsLiga||j.assistLiga)?` · ⚽${j.golsLiga||0} 🅰️${j.assistLiga||0}`:''}</small></span>
+      <span class="elN"><b><i class="nm">${numDe(j)}</i> <span style="color:${posCorPos(j)}">${j.nome}</span></b>${marcas}<small>${papelDe(j)} · ${(j.hab||[]).join(' · ')}</small><small style="opacity:.95"><span style="color:${corNivel(moralJ(j))}">😊 ${Math.round(moralJ(j))}</span> · <span style="color:${corNivel(entrosJ(j))}">🤝 ${Math.round(entrosJ(j))}</span>${(j.golsLiga||j.assistLiga)?` · ⚽${j.golsLiga||0} 🅰️${j.assistLiga||0}`:''}</small></span>
       <span class="elF">${j.f}</span>
       <span class="elNt" style="color:${cm}">${m}</span>
       <span class="elE"><i style="width:${e}%;background:${corEn(e)}"></i><b>${e}</b></span>
@@ -7629,7 +7744,7 @@ function abaTat(){
   if(!S.cap||!eu.elenco.find(j=>j.id===S.cap))S.cap=(eu.elenco.filter(j=>j.tit).sort((a,b)=>b.f-a.f)[0]||eu.elenco[0]).id;
   if(S.cob&&!eu.elenco.find(j=>j.id===S.cob))S.cob=null;   // v47: sem batedor guardado = Automático (antes o capitão era imposto)
   // Garantir posições corretas automaticamente ao abrir a tática
-  try{resetPos(eu)}catch(e){}
+  try{garantePos(eu)}catch(e){}
   save();
   const tit=eu.elenco.filter(j=>j.tit);
   const opts=(arr,sel)=>arr.map(j=>`<option value="${j.id}" ${j.id===sel?'selected':''}>${j.nome}</option>`).join("");
@@ -7657,7 +7772,7 @@ function abaTat(){
   <div class="card" style="margin-top:10px"><div class="sc2" style="max-height:240px;overflow:auto"><table class="tl"><tr><th>P</th><th>Nome</th><th>F</th><th>Energia</th><th>Ct</th><th>G</th><th>I</th></tr>
   ${[...eu.elenco].sort((a,b)=>POS_ORD(a.pos)-POS_ORD(b.pos)||b.f-a.f).map(j=>`<tr class="${j.tit?'t':''}"><td>${j.tit?'★':''}${j.pos[0]}</td><td>${j.nome}${j.conv?' '+fl(j.conv.p)+' Convocado':(j.lesao>0?' 🤕 '+j.lesao+'j':'')}</td><td class="y">${j.f}</td><td style="min-width:60px">${enBar(j)}</td><td>${j.ct||1}a</td><td>${j.gols}</td><td>${j.idade}</td></tr>`).join("")}</table></div></div>`;
 }
-function eu_auto(){S.selId=null;const eu=S.clubes[S.meu];eu.form=S.form;auto(eu,false);save();render()}
+function eu_auto(){S.selId=null;const eu=S.clubes[S.meu];eu.form=S.form;auto(eu,false);try{resetPos(eu)}catch(e){}save();render()}
 function toggle(id){const eu=S.clubes[S.meu],j=eu.elenco.find(x=>x.id===id);
   if(j.lesao>0)return aviso("Jogador lesionado.");
   if(!j.tit&&eu.elenco.filter(x=>x.tit).length>=11)return aviso("Já há 11 titulares. Tire alguém antes.");
@@ -7754,6 +7869,13 @@ function abaDB(){
   ${linhaInfo("Jogadores reais",st.jog+" clubes · resto gerado","y")}
   <small class="mu" style="display:block;margin-top:6px">Tudo aqui é gravado no save e pode ser sobrescrito por JSON, sem tocar no código do jogo.</small>
   <button class="sm big" onclick="reaplicaElencos()">♻️ Reaplicar elencos reais</button></div>`;
+  h+=`<div class="card"><div class="tag" style="margin-bottom:6px">📥 Importar elencos reais (CSV ou JSON)</div>
+  <small class="mu" style="display:block;margin-bottom:6px">Um arquivo com todos os clubes. Colunas: clube, nome, pos, pos2, idade, nac, num, pe, overall, pot, valor, salario, contrato, titular, ordem, capitao, penalti, falta, escanteio, tecnico, formacao. Só clube, nome, pos e overall são obrigatórios. Clubes da sua divisão são atualizados na hora; os demais valem ao iniciar um novo jogo. Dados ficam gravados neste navegador.</small>
+  <input type="file" accept=".csv,.json,.txt" onchange="impArquivo(this)" style="margin-bottom:6px">
+  <textarea id="impTxt" rows="4" placeholder="Ou cole aqui o CSV/JSON" style="width:100%"></textarea>
+  <div id="impRes" style="margin:6px 0;font-size:13px"></div>
+  <div class="row"><button class="sm s" onclick="impModelo()">⬇️ Modelo CSV</button><button class="sm s" onclick="impExecuta(false)">✔️ Validar</button><button class="sm" onclick="impExecuta(true)">⬆️ Importar</button></div>
+  <button class="sm s big" onclick="impLimpa()">🗑️ Remover importados</button></div>`;
   h+=`<div class="card"><div class="tag" style="margin-bottom:8px">Clubes da minha divisão</div>`;
   S.clubes.forEach(function(c,i){
     const k1=kitDe(c,1),k2=kitDe(c,2),k3=kitDe(c,3);
