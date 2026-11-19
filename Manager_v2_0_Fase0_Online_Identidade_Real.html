@@ -790,11 +790,11 @@ function realizaElenco(c){
 }
 
 // ===== IMPORTADOR DE ELENCOS (JSON/CSV) · grava no navegador, aplica na criação do jogo e em "Reaplicar" =====
-const IMP_KEY="mgr_import_elencos_v1",IMP_JOG={},IMP_EXTRA={};
+const IMP_ESC=0.62,IMP_KEY="mgr_import_elencos_v1",IMP_JOG={},IMP_EXTRA={};
 const impNorm=s=>String(s==null?"":s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 const IMP_POS={gol:"GOL",gk:"GOL",goleiro:"GOL",zag:"ZAG",cb:"ZAG",zagueiro:"ZAG",ld:"LD",rb:"LD",rwb:"LD",lateraldireito:"LD",le:"LE",lb:"LE",lwb:"LE",lateralesquerdo:"LE",vol:"VOL",cdm:"VOL",dm:"VOL",volante:"VOL",mei:"MEI",cm:"MEI",cam:"MEI",am:"MEI",meia:"MEI",mc:"MEI",pd:"PD",rw:"PD",rm:"PD",pontadireita:"PD",pe:"PE",lw:"PE",lm:"PE",pontaesquerda:"PE",ata:"ATA",st:"ATA",cf:"ATA",fw:"ATA",atacante:"ATA",centroavante:"ATA"};
 const impPos=p=>IMP_POS[impNorm(p).replace(/[^a-z]/g,"")]||null;
-const IMP_COL={clube:"clube",time:"clube",nome:"nome",jogador:"nome",pos:"pos",posicao:"pos",pos2:"pos2",secundarias:"pos2",posicoes:"pos2",idade:"idade",nasc:"nasc",nascimento:"nasc",nac:"nac",nacionalidade:"nac",num:"num",numero:"num",camisa:"num",pe:"pe",overall:"f",ovr:"f",f:"f",forca:"f",pot:"pot",potencial:"pot",valor:"valor",salario:"sal",sal:"sal",contrato:"ct",ct:"ct",titular:"tit",ordem:"ordem",capitao:"cap",penalti:"pen",falta:"fal",escanteio:"esc",tecnico:"tec",tecnico_nac:"tecNac",tecnico_estilo:"tecEst",formacao:"form"};
+const IMP_COL={clube:"clube",time:"clube",nome:"nome",jogador:"nome",pos:"pos",posicao:"pos",pos2:"pos2",secundarias:"pos2",posicoes:"pos2",idade:"idade",nasc:"nasc",nascimento:"nasc",nac:"nac",nacionalidade:"nac",num:"num",numero:"num",camisa:"num",pe:"pe",overall:"f",ovr:"f",f:"f",forca:"f",pot:"pot",potencial:"pot",valor:"valor",salario:"sal",sal:"sal",contrato:"ct",ct:"ct",titular:"tit",ordem:"ordem",capitao:"cap",penalti:"pen",falta:"fal",escanteio:"esc",tecnico:"tec",club_name:"clube",long_name:"nome",short_name:"nome",player_positions:"posl",age:"idade",nationality_name:"nac",club_jersey_number:"num",preferred_foot:"pe",potential:"pot",value_eur:"valor",wage_eur:"sal",club_contract_valid_until:"ctano",tecnico_nac:"tecNac",tecnico_estilo:"tecEst",formacao:"form"};
 const impSim=v=>["1","s","sim","x","true","t","y","yes"].includes(impNorm(v));
 function impCSV(txt){
   const ls=txt.replace(/^\uFEFF/,"").split(/\r?\n/).filter(l=>l.trim());if(ls.length<2)throw new Error("CSV vazio");
@@ -805,15 +805,19 @@ function impCSV(txt){
   ls.slice(1).forEach(l=>{const v=cut(l),o={};H.forEach((k,i)=>{if(k&&v[i]!=="")o[k]=v[i]});if(!o.clube||!o.nome)return;
     const kc=impNorm(o.clube),c=cl[kc]=cl[kc]||{clube:o.clube,jogadores:[]};
     if(o.form)c.formacao=o.form;if(o.tec)c.tecnico={nome:o.tec,nac:o.tecNac,estilo:o.tecEst};
+    if(o.posl&&!o.pos){const q=o.posl.split(/[,|\/]/).map(s=>s.trim());o.pos=q[0];o.pos2=q.slice(1).join("|")}
+    if(o.ctano&&!o.ct)o.ct=Math.max(1,Math.min(5,+o.ctano-new Date().getFullYear()));
     const j={nome:o.nome,pos:o.pos,pos2:o.pos2?o.pos2.split(/[|\/]/).map(s=>s.trim()):[],idade:o.idade?+o.idade:null,nasc:o.nasc?+o.nasc:null,nac:o.nac,num:o.num?+o.num:null,pe:o.pe,f:o.f?+o.f:null,pot:o.pot?+o.pot:null,valor:o.valor?+o.valor:null,sal:o.sal?+o.sal:null,ct:o.ct?+o.ct:null,titular:impSim(o.tit),ordem:o.ordem?+o.ordem:null};
     c.jogadores.push(j);
     if(impSim(o.cap))c.capitao=o.nome;if(impSim(o.pen))c.penaltis=o.nome;if(impSim(o.fal))c.faltas=o.nome;if(impSim(o.esc))c.escanteios=o.nome});
   return{clubes:Object.values(cl)};
 }
 function impValida(txt){
-  let d;const s=txt.trim();
-  if(!s)throw new Error("Nada para importar.");
-  d=(s[0]==="{"||s[0]==="[")?JSON.parse(s):impCSV(s);
+  let d;
+  if(txt&&typeof txt==="object")d=txt;
+  else{const s=String(txt||"").trim();
+    if(!s)throw new Error("Nada para importar.");
+    d=(s[0]==="{"||s[0]==="[")?JSON.parse(s):impCSV(s)}
   const arr=Array.isArray(d)?d:(d.clubes||[]);if(!arr.length)throw new Error("Sem clubes no arquivo.");
   const idx={};Object.keys(LIGAS).forEach(p=>LIGAS[p].forEach(dv=>dv.forEach(c=>{idx[impNorm(c[0])]=c[0]})));
   const ok=[],semClube=[],avisos=[];let nj=0;
@@ -863,14 +867,56 @@ function impCarrega(){try{const d=JSON.parse(localStorage.getItem(IMP_KEY)||"nul
 impCarrega();
 function impExecuta(confirmar){
   const ta=document.getElementById("impTxt"),out=document.getElementById("impRes");let r;
-  try{r=impValida(ta.value)}catch(e){out.innerHTML='<span class="r">Erro: '+String(e.message).replace(/</g,"&lt;")+'</span>';return}
+  try{r=impValida(IMP_PEND||ta.value)}catch(e){out.innerHTML='<span class="r">Erro: '+String(e.message).replace(/</g,"&lt;")+'</span>';return}
   out.innerHTML=`<b class="g">${r.ok.length} clube(s) / ${r.nj} jogadores válidos</b>`+(r.semClube.length?`<br><span class="y">Clubes não reconhecidos (${r.semClube.length}): ${r.semClube.slice(0,8).join(", ")}${r.semClube.length>8?"…":""}</span>`:"")+(r.avisos.length?`<br><small class="mu">${r.avisos.slice(0,6).join("<br>")}${r.avisos.length>6?"<br>+"+(r.avisos.length-6)+" avisos":""}</small>`:"");
   if(!confirmar)return;
+  const esc=document.getElementById("impEsc");const k=(esc&&esc.checked)?IMP_ESC:1;
+  if(k!==1)r.ok.forEach(c=>c.jog.forEach(p=>{p.f=Math.max(15,Math.round(p.f*k));if(p.pot)p.pot=Math.max(p.f,Math.round(p.pot*k))}));
   r.ok.forEach(c=>{IMP_JOG[c.nome]=c.jog;IMP_EXTRA[c.nome]=c.ex;JOG_REAL[c.nome]=c.jog});
   impSalva();reaplicaElencos();
 }
-function impLimpa(){confirma("Remover todos os elencos importados deste navegador?",()=>{Object.keys(IMP_JOG).forEach(k=>delete JOG_REAL[k]);Object.keys(IMP_JOG).forEach(k=>delete IMP_JOG[k]);Object.keys(IMP_EXTRA).forEach(k=>delete IMP_EXTRA[k]);try{localStorage.removeItem(IMP_KEY)}catch(e){}render()})}
-function impArquivo(inp){const f=inp.files&&inp.files[0];if(!f)return;const fr=new FileReader();fr.onload=()=>{document.getElementById("impTxt").value=fr.result;impExecuta(false)};fr.readAsText(f,"utf-8")}
+function impLimpa(){confirma("Remover todos os elencos importados deste navegador?",()=>{Object.keys(IMP_JOG).forEach(k=>delete JOG_REAL[k]);IMP_PEND=null;Object.keys(IMP_JOG).forEach(k=>delete IMP_JOG[k]);Object.keys(IMP_EXTRA).forEach(k=>delete IMP_EXTRA[k]);try{localStorage.removeItem(IMP_KEY)}catch(e){}render()})}
+
+let IMP_PEND=null;                         // elencos lidos de arquivos (zip/múltiplos), aguardando validar/importar
+async function impUnzip(buf){               // leitor ZIP nativo (stored + deflate), sem bibliotecas
+  const dv=new DataView(buf),u8=new Uint8Array(buf);let e=-1;
+  for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-65600);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break}}
+  if(e<0)throw new Error("ZIP inválido");
+  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out=[],td=new TextDecoder("utf-8");
+  for(let k=0;k<n;k++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const flag=dv.getUint16(p+8,true),met=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+    const nome=td.decode(u8.subarray(p+46,p+46+nl));p+=46+nl+xl+cl;
+    if(nome.endsWith("/")||/__MACOSX|(^|\/)\./.test(nome)||!/\.(csv|json|txt)$/i.test(nome))continue;
+    if(flag&1)throw new Error("ZIP com senha não é suportado");
+    const ds=lo+30+dv.getUint16(lo+26,true)+dv.getUint16(lo+28,true),raw=u8.subarray(ds,ds+cs);
+    let bytes;
+    if(met===0)bytes=raw;
+    else if(met===8){bytes=new Uint8Array(await new Response(new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer())}
+    else throw new Error("Compressão não suportada em "+nome);
+    out.push({nome,texto:td.decode(bytes)});
+  }
+  return out;
+}
+async function impArquivo(inp){
+  const fs=[...(inp.files||[])];if(!fs.length)return;setTimeout(()=>{try{inp.value=""}catch(e){}},0);
+  const out=document.getElementById("impRes");out.textContent="Lendo arquivos…";
+  try{
+    const textos=[];
+    for(const f of fs){
+      if(/\.(rar|7z|tar|gz)$/i.test(f.name))throw new Error(f.name+": o navegador não abre este formato. Extraia o .rar no aparelho e selecione os arquivos .csv/.json (pode escolher vários), ou compacte em .zip.");
+      if(/\.zip$/i.test(f.name)){const e=await impUnzip(await f.arrayBuffer());if(!e.length)throw new Error(f.name+": nenhum .csv/.json/.txt dentro do ZIP");e.forEach(x=>textos.push(x))}
+      else textos.push({nome:f.name,texto:await f.text()});
+    }
+    const clubes=[];
+    textos.forEach(x=>{const s=x.texto.replace(/^\uFEFF/,"").trim();if(!s)return;
+      let d;try{d=(s[0]==="{"||s[0]==="[")?JSON.parse(s):impCSV(s)}catch(e){throw new Error(x.nome+": "+e.message)}
+      (Array.isArray(d)?d:(d.clubes||[])).forEach(c=>clubes.push(c))});
+    IMP_PEND={clubes};document.getElementById("impTxt").value="";
+    out.innerHTML='<small class="mu">'+textos.length+" arquivo(s) lido(s): "+textos.map(x=>x.nome.split("/").pop()).slice(0,4).join(", ")+(textos.length>4?"…":"")+"</small>";
+    impExecuta(false);
+  }catch(e){IMP_PEND=null;out.innerHTML='<span class="r">'+String(e.message).replace(/</g,"&lt;")+"</span>"}
+}
 function impModelo(){
   const csv="clube;nome;pos;pos2;idade;nac;num;pe;overall;pot;valor;salario;contrato;titular;ordem;capitao;penalti;falta;escanteio;tecnico;tecnico_nac;tecnico_estilo;formacao\n"+
   "Flamengo;Agustín Rossi;GOL;;30;Argentina;1;D;82;82;15000000;600000;3;sim;1;;;;;Nome do Técnico;Portugal;Ofensiva;4-3-3\n"+
@@ -7870,9 +7916,12 @@ function abaDB(){
   <small class="mu" style="display:block;margin-top:6px">Tudo aqui é gravado no save e pode ser sobrescrito por JSON, sem tocar no código do jogo.</small>
   <button class="sm big" onclick="reaplicaElencos()">♻️ Reaplicar elencos reais</button></div>`;
   h+=`<div class="card"><div class="tag" style="margin-bottom:6px">📥 Importar elencos reais (CSV ou JSON)</div>
-  <small class="mu" style="display:block;margin-bottom:6px">Um arquivo com todos os clubes. Colunas: clube, nome, pos, pos2, idade, nac, num, pe, overall, pot, valor, salario, contrato, titular, ordem, capitao, penalti, falta, escanteio, tecnico, formacao. Só clube, nome, pos e overall são obrigatórios. Clubes da sua divisão são atualizados na hora; os demais valem ao iniciar um novo jogo. Dados ficam gravados neste navegador.</small>
-  <input type="file" accept=".csv,.json,.txt" onchange="impArquivo(this)" style="margin-bottom:6px">
-  <textarea id="impTxt" rows="4" placeholder="Ou cole aqui o CSV/JSON" style="width:100%"></textarea>
+  <small class="mu" style="display:block;margin-bottom:6px">Aceita .csv, .json, .txt, .zip (com vários arquivos dentro) ou vários arquivos de uma vez. Para .rar: extraia antes. Colunas: clube, nome, pos, pos2, idade, nac, num, pe, overall, pot, valor, salario, contrato, titular, ordem, capitao, penalti, falta, escanteio, tecnico, formacao. Só clube, nome, pos e overall são obrigatórios. Clubes da sua divisão são atualizados na hora; os demais valem ao iniciar um novo jogo. Dados ficam gravados neste navegador.</small>
+  <input type="file" id="impF1" onchange="impArquivo(this)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+  <input type="file" id="impFN" multiple onchange="impArquivo(this)" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+  <div class="row" style="margin-bottom:6px"><button class="sm" onclick="document.getElementById('impF1').click()">📂 Escolher arquivo</button><button class="sm s" onclick="document.getElementById('impFN').click()">📂 Vários arquivos</button></div>
+  <textarea id="impTxt" rows="4" oninput="IMP_PEND=null" placeholder="Ou cole aqui o CSV/JSON" style="width:100%"></textarea>
+  <label style="display:flex;gap:6px;align-items:center;font-size:13px;margin:6px 0"><input type="checkbox" id="impEsc" checked style="width:auto"> Converter overall real (0–99) para a escala do jogo (×0,62)</label>
   <div id="impRes" style="margin:6px 0;font-size:13px"></div>
   <div class="row"><button class="sm s" onclick="impModelo()">⬇️ Modelo CSV</button><button class="sm s" onclick="impExecuta(false)">✔️ Validar</button><button class="sm" onclick="impExecuta(true)">⬆️ Importar</button></div>
   <button class="sm s big" onclick="impLimpa()">🗑️ Remover importados</button></div>`;
