@@ -862,6 +862,32 @@ function impAplicaEsc(c){ // aplica a escalação real UMA vez; devolve true se 
 const _autoOrig=auto;auto=function(c){if(c&&c._escReal&&impAplicaEsc(c))return;return _autoOrig.apply(this,arguments)};
 const _garanteTecOrig=garanteTec;garanteTec=function(){const r=_garanteTecOrig.apply(this,arguments);
   try{S.clubes.forEach(c=>{const x=IMP_EXTRA[c.nome],t=x&&x.tec;if(t&&t.nome&&c.tec&&!c.tec.meu){c.tec.nome=t.nome;if(t.nac)c.tec.nac=t.nac;if(t.estilo)c.tec.estilo=t.estilo}})}catch(e){}return r};
+
+// ----- elencos importados também nos clubes de OUTRAS ligas (mundo compacto de 24 vagas) -----
+const IMP_MAP={};
+function impSlotMap(nome){                     // vaga i (POS22) -> índice do jogador real; determinístico
+  if(IMP_MAP[nome])return IMP_MAP[nome];
+  const reg=IMP_JOG[nome]||[],ord=reg.map((_,i)=>i).sort((a,b)=>reg[b].f-reg[a].f||a-b);
+  const mapa=Array(POS22.length).fill(-1),usado=new Set();
+  const atribui=(minAf)=>ord.forEach(pi=>{if(usado.has(pi))return;let bi=-1,bs=-1;
+    POS22.forEach((sp,i)=>{if(mapa[i]>=0)return;const s=sp===reg[pi].pos?11:af(reg[pi].pos,sp);if(s>=minAf&&s>bs){bs=s;bi=i}});
+    if(bi>=0){mapa[bi]=pi;usado.add(pi)}});
+  atribui(11);atribui(5);atribui(1);
+  return IMP_MAP[nome]=mapa;
+}
+function impOverlay(c,k,est){
+  const reg=IMP_JOG[c.nome];if(!reg||!reg.length||!est||!est.c)return;
+  if(!S.impSeed)S.impSeed={};
+  const mapa=impSlotMap(c.nome),seed=!S.impSeed[k],ano=new Date().getFullYear();
+  c.elenco.forEach((j,i)=>{
+    const tp=est.c[i],r=reg[mapa[i]];if(!tp||!r||(tp[5]||0)>0)return;         // vaga já renovada por jovem gerado: mantém
+    if(seed){const id=r.idade||(r.nasc?ano-r.nasc:tp[0]);tp[0]=id;tp[1]=Math.round(r.f*10);
+      tp[2]=Math.min(100,Math.max(r.f,r.pot||(r.f+(id<=23?Math.round((24-id)*1.5):0))));
+      j.idade=tp[0];j.fReal=tp[1]/10;j.f=Math.round(j.fReal);j.pot=tp[2];j.val=valorDe(j.f,j.idade,j.pot,j.mk);j.sal=salarioDe(j.f,j.mk)}
+    j.nome=r.nome;j.real=true;if(r.nac)j.nac=r.nac;if(r.pe)j.pe=r.pe;if(r.pos2&&r.pos2.length)j.pos2=r.pos2;if(r.num)j.num=r.num;
+  });
+  if(seed)S.impSeed[k]=1;
+}
 function impSalva(){try{localStorage.setItem(IMP_KEY,JSON.stringify({jog:IMP_JOG,ex:IMP_EXTRA}))}catch(e){}}
 function impCarrega(){try{const d=JSON.parse(localStorage.getItem(IMP_KEY)||"null");if(d){Object.assign(IMP_JOG,d.jog||{});Object.assign(IMP_EXTRA,d.ex||{});Object.assign(JOG_REAL,IMP_JOG)}}catch(e){}}
 impCarrega();
@@ -873,7 +899,9 @@ function impExecuta(confirmar){
   const esc=document.getElementById("impEsc");const k=(esc&&esc.checked)?IMP_ESC:1;
   if(k!==1)r.ok.forEach(c=>c.jog.forEach(p=>{p.f=Math.max(15,Math.round(p.f*k));if(p.pot)p.pot=Math.max(p.f,Math.round(p.pot*k))}));
   r.ok.forEach(c=>{IMP_JOG[c.nome]=c.jog;IMP_EXTRA[c.nome]=c.ex;JOG_REAL[c.nome]=c.jog});
-  impSalva();reaplicaElencos();
+  impSalva();Object.keys(IMP_MAP).forEach(k=>delete IMP_MAP[k]);S.impSeed={};S._mem={};
+  const nomesLiga=new Set(S.clubes.map(c=>c.nome));window.__impLiga=r.ok.filter(c=>nomesLiga.has(c.nome)).length;window.__impOutros=r.ok.length-window.__impLiga;
+  reaplicaElencos();
 }
 function impLimpa(){confirma("Remover todos os elencos importados deste navegador?",()=>{Object.keys(IMP_JOG).forEach(k=>delete JOG_REAL[k]);IMP_PEND=null;Object.keys(IMP_JOG).forEach(k=>delete IMP_JOG[k]);Object.keys(IMP_EXTRA).forEach(k=>delete IMP_EXTRA[k]);try{localStorage.removeItem(IMP_KEY)}catch(e){}render()})}
 
@@ -4186,6 +4214,7 @@ function clubeMundo(pais,div,idx){
   const pico=picoClube(pais,div,idx);
   if(!S.mundo[k])S.mundo[k]=criaEstadoMundo(k,pico);
   const c={ext:true,compacto:true,pais,div,idx,nome:info[0],sig:info[1],cor:info[2],cor2:info[3],forca:0,elenco:elencoDoMundo(k,pico,S.mundo[k])};
+  try{impOverlay(c,k,S.mundo[k])}catch(e){}
   c.forca=forcaMedia(c);
   c.form=c.form||"4-4-2";
   try{auto(c)}catch(e){}
@@ -7883,7 +7912,7 @@ function infoPorNome2(pais,nome){const ch=chaveFixa(pais,nome);if(!ch)return{sig
 // ===== TELA: BASE DE DADOS (2.0.0-alpha) =====
 function setEscClube(i){const v=document.getElementById("esc"+i).value.trim();S.clubes[i].esc=v||null;save();render()}
 function setKitClube(i,v){S.clubes[i].kit=+v||1;save();render()}
-function reaplicaElencos(){let n=0;S.clubes.forEach(function(c){try{if(realizaElenco(c)){c.forca=forcaMedia(c);n++}}catch(e){}});try{S.clubes.forEach(c=>auto(c))}catch(e){}save();render();aviso(n+" elenco(s) reais aplicados.")}
+function reaplicaElencos(){let n=0;S.clubes.forEach(function(c){try{if(realizaElenco(c)){c.forca=forcaMedia(c);n++}}catch(e){}});try{S.clubes.forEach(c=>auto(c))}catch(e){}save();render();aviso((window.__impLiga!=null?window.__impLiga+" clube(s) da sua divisão atualizados agora.\n"+window.__impOutros+" de outras ligas: valem ao abrir cada clube (Mercado/Clubes).":n+" elenco(s) reais aplicados.")+"\nClubes sem dados no arquivo mantêm o elenco gerado.");window.__impLiga=null}
 function dbExportar(){
   const out={ver:DB_VER,gerado:new Date().toISOString(),clubes:S.clubes.map(function(c,i){return {i:i,nome:c.nome,pais:c.pais,div:c.div,liga:c.liga,est:c.est?{nome:c.est.nome,base:c.est.base,nivel:c.est.nivel}:null,esc:c.esc||null,kit:c.kit||1,uniformes:[1,2,3].map(function(n){const k=kitDe(c,n);return [k.c1,k.c2,k.pat]})}})};
   try{const ta=document.getElementById("dbjson");ta.value=JSON.stringify(out,null,1);ta.focus();ta.select();document.execCommand&&document.execCommand("copy");toast("JSON gerado e copiado")}catch(e){aviso("Não foi possível copiar. Selecione o texto e copie manualmente.")}
