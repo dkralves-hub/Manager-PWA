@@ -2224,6 +2224,16 @@ function mkOutra(dv,forcaBase){
   }
   return {div:dv,nome:LIGANOME[S.pais][dv],jogos};
 }
+// ----- OUTROS JOGOS DAS COPAS AO VIVO (mesmo painel "Outros jogos" da liga) -----
+function cupOutras(titulo,lista,parts,ia,ib){
+  const rg=rngClube("cupo|"+titulo+"|"+S.temp+"|"+(S.dia||0));
+  const jogos=(lista||[]).filter(g=>!(g[0]===ia&&g[1]===ib)).map(g=>{const A=parts[g[0]],B=parts[g[1]];if(!A||!B)return null;
+    return{A,B,a:A.nome,b:B.nome,pais:A.pais||"",div:0,ia:g[0],ib:g[1],fa:(A.forca||50)+3,fb:(B.forca||50),ga:0,gb:0,ev:[],
+      est:"Estádio "+String(A.nome).split(" ")[0],pub:Math.round(8000+rg()*40000),nocl:true}}).filter(Boolean);
+  return jogos.length?[{div:0,nome:titulo,semRod:true,jogos}]:[];
+}
+function livePlacarCopa(a,b){const L=S.live;if(!L||!L.outras)return null;
+  for(const o of L.outras)for(const g of o.jogos)if(g.nocl&&g.ia===a&&g.ib===b)return{ga:g.ga,gb:g.gb};return null}
 function criaOutras(){
   const L=S.live;L.outras=[];
   const base={0:70,1:60,2:52};
@@ -2247,11 +2257,11 @@ function htmlOutras(){
   const cor2=x=>x.cor2&&x.cor2!=='#ffffff'?x.cor2:x.cor;
   let h=`<div class="tag" style="margin-top:10px">Outros jogos da rodada</div>`;
   L.outras.forEach(o=>{
-    h+=`<div class="bfLista" style="margin-bottom:8px"><div class="bfDv">${o.nome} · ${S.rodada+1}ª rodada</div>`;
+    h+=`<div class="bfLista" style="margin-bottom:8px"><div class="bfDv">${o.nome}${o.semRod?"":" · "+(S.rodada+1)+"ª rodada"}</div>`;
     o.jogos.forEach(g=>{
       const e=g.ev.filter(x=>x.t==='g'||x.t==='c').slice(-1)[0];
       const lance=e?`${e.t==='g'?'⚽':(e.verm?'🟥':'🟨')} ${(e.n||'').split(' ').slice(-1)[0]} ${e.m}' - ${e.m<=45?'1º':'2º'}`:'';
-      h+=`<div class="bfJ" onclick="escolhaVerMundo('${g.pais}',${g.div},${g.ia},${g.ib})">
+      h+=`<div class="bfJ" ${g.nocl?"":`onclick="escolhaVerMundo('${g.pais}',${g.div},${g.ia},${g.ib})"`}>
         <span class="bfE">${g.est} | ${Math.round(g.pub/1000)}k</span>
         <div class="bfC" style="--c1:${g.A.cor};--c2:${cor2(g.A)}">${escudo(g.A,15)}<span>${g.A.nome}</span></div>
         <div class="bfS ${g.ga>g.gb?'w':''}">${g.ga}</div><div class="bfS ${g.gb>g.ga?'w':''}">${g.gb}</div>
@@ -2751,7 +2761,7 @@ function clComecaMeuJogo(){
   // garante estádio e elencos prontos
   est(CA);est(CB);
   if(criaLive()===false)return;
-  S.live.outras=[];S.live.emCL=true;S.live.tela="lista";
+  S.live.outras=cupOutras(clTituloFase(),(c.fase==="liga"?(c.cal[c.rodada]||[]):(c.eliminatoria?c.eliminatoria.jogos:[])),c.parts,ia,ib);S.live.emCL=true;S.live.tela="lista";
   S.aba="live";render();somApito();playLive();
 }
 
@@ -2789,7 +2799,7 @@ function guardaResultadosCL(){
   const L=S.live,j=L.jogos[0],c=S.cl,ai=S.clAoVivo;
   const meuJ={a:c.parts[ai.ia].nome,b:c.parts[ai.ib].nome,ca:c.parts[ai.ia].cor,cb:c.parts[ai.ib].cor,ga:j.ga,gb:j.gb,meu:true};
   const todos=(c.fase==="liga"?(c.cal[c.rodada]||[]):(c.eliminatoria?c.eliminatoria.jogos:[])).filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib));
-  const outros=todos.map(g=>{const r=clSimula(g[0],g[1]);return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
+  const outros=todos.map(g=>{const r=livePlacarCopa(g[0],g[1])||clSimula(g[0],g[1]);return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
   S._clPre=outros.map(o=>o.pre);
   const dados={};
   Object.keys(LIGAS).forEach(pa=>{dados[pa]=resultadosPais(pa)});
@@ -3016,7 +3026,7 @@ function lbComecaMeuJogo(){
   S.clubes=[CA,CB];CA.id=0;CB.id=1;S.meu=meuEhA?0:1;S.fixt=[[[0,1]]];S.rodada=0;
   S.clAoVivo={ia,ib,meuEhA,lib:true};
   est(CA);est(CB);if(criaLive()===false)return;
-  S.live.outras=[];S.live.emCL=true;S.live.tela="lista";
+  S.live.outras=cupOutras(lbTituloFase(),lbJogosDaData(),c.parts,ia,ib);S.live.emCL=true;S.live.tela="lista";
   S.aba="live";render();somApito();playLive();
 }
 function fimLiveLB(){
@@ -3040,7 +3050,7 @@ function fimLiveLB(){
 function guardaResultadosLB(){
   const L=S.live,j=L.jogos[0],c=S.lb,ai=S.clAoVivo;
   const meuJ={a:c.parts[ai.ia].nome,b:c.parts[ai.ib].nome,ca:c.parts[ai.ia].cor,cb:c.parts[ai.ib].cor,ga:j.ga,gb:j.gb,meu:true};
-  const outros=lbJogosDaData().filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=lbSimula(g[0],g[1]);return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
+  const outros=lbJogosDaData().filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=livePlacarCopa(g[0],g[1])||lbSimula(g[0],g[1]);return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
   S._lbPre=outros.map(o=>o.pre);
   const dados={};Object.keys(LIGAS).forEach(pa=>{dados[pa]=resultadosPais(pa)});
   dados["Libertadores"]=[{div:0,nome:lbTituloFase(),jogos:[meuJ,...outros]}];
@@ -3163,7 +3173,7 @@ function cnComecaMeuJogo(){
   S.clubes=[CA,CB];CA.id=0;CB.id=1;S.meu=meuEhA?0:1;S.fixt=[[[0,1]]];S.rodada=0;
   S.clAoVivo={ia,ib,meuEhA,copa:true};
   est(CA);est(CB);if(criaLive()===false)return;
-  S.live.outras=[];S.live.emCL=true;S.live.tela="lista";
+  S.live.outras=cupOutras("Copa nacional · "+c.nomeFase,c.eliminatoria.pares,c.parts,ia,ib);S.live.emCL=true;S.live.tela="lista";
   S.aba="live";render();somApito();playLive();
 }
 function fimLiveCN(){
@@ -3171,7 +3181,7 @@ function fimLiveCN(){
   const c=S.cn;
   S.pos=posJogo(j);S.pos.tituloCompleto="Copa nacional · "+c.nomeFase;
   // resultados dos outros jogos da fase
-  const outros=c.eliminatoria.pares.filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=cnSimula(g[0],g[1]);return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
+  const outros=c.eliminatoria.pares.filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=livePlacarCopa(g[0],g[1])||cnSimula(g[0],g[1]);return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
   S._cnPre=outros.map(o=>o.pre);
   const meuJ={a:c.parts[ai.ia].nome,b:c.parts[ai.ib].nome,ca:c.parts[ai.ia].cor,cb:c.parts[ai.ib].cor,ga:j.ga,gb:j.gb,meu:true};
   const dados={};Object.keys(LIGAS).forEach(pa=>{dados[pa]=resultadosPais(pa)});
@@ -3298,7 +3308,7 @@ function elComecaMeuJogo(){
   S.clubes=[CA,CB];CA.id=0;CB.id=1;S.meu=meuEhA?0:1;S.fixt=[[[0,1]]];S.rodada=0;
   S.clAoVivo={ia,ib,meuEhA,eu:true};
   est(CA);est(CB);if(criaLive()===false)return;
-  S.live.outras=[];S.live.emCL=true;S.live.tela="lista";
+  S.live.outras=cupOutras(elTituloFase(),comEL(()=>{const cc=S.cl;return cc.fase==="liga"?(cc.cal[cc.rodada]||[]):(cc.eliminatoria?cc.eliminatoria.jogos:[])}),c.parts,ia,ib);S.live.emCL=true;S.live.tela="lista";
   S.aba="live";render();somApito();playLive();
 }
 function fimLiveEL(){
@@ -3306,7 +3316,7 @@ function fimLiveEL(){
   S.pos=posJogo(j);S.pos.tituloCompleto=elTituloFase();
   // resultados dos outros jogos
   const lista=comEL(()=>{const cc=S.cl;return cc.fase==="liga"?(cc.cal[cc.rodada]||[]):(cc.eliminatoria?cc.eliminatoria.jogos:[])});
-  const outros=lista.filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=comEL(()=>clSimula(g[0],g[1]));return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
+  const outros=lista.filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=livePlacarCopa(g[0],g[1])||comEL(()=>clSimula(g[0],g[1]));return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
   S._clPre=outros.map(o=>o.pre);
   const meuJ={a:c.parts[ai.ia].nome,b:c.parts[ai.ib].nome,ca:c.parts[ai.ia].cor,cb:c.parts[ai.ib].cor,ga:j.ga,gb:j.gb,meu:true};
   const dados={};Object.keys(LIGAS).forEach(pa=>{dados[pa]=resultadosPais(pa)});
@@ -3382,14 +3392,14 @@ function saComecaMeuJogo(){
   S.clubes=[CA,CB];CA.id=0;CB.id=1;S.meu=meuEhA?0:1;S.fixt=[[[0,1]]];S.rodada=0;
   S.clAoVivo={ia,ib,meuEhA,sa:true};
   est(CA);est(CB);if(criaLive()===false)return;
-  S.live.outras=[];S.live.emCL=true;S.live.tela="lista";
+  S.live.outras=cupOutras(saTituloFase(),comSA(()=>lbJogosDaData()),c.parts,ia,ib);S.live.emCL=true;S.live.tela="lista";
   S.aba="live";render();somApito();playLive();
 }
 function fimLiveSA(){
   const L=S.live,j=L.jogos[0],ai=S.clAoVivo,c=S.sa;
   S.pos=posJogo(j);S.pos.tituloCompleto=saTituloFase();
   const lista=comSA(()=>lbJogosDaData());
-  const outros=lista.filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=comSA(()=>lbSimula(g[0],g[1]));return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
+  const outros=lista.filter(g=>!(g[0]===ai.ia&&g[1]===ai.ib)).map(g=>{const r=livePlacarCopa(g[0],g[1])||comSA(()=>lbSimula(g[0],g[1]));return{a:c.parts[g[0]].nome,b:c.parts[g[1]].nome,ca:c.parts[g[0]].cor,cb:c.parts[g[1]].cor,ga:r.ga,gb:r.gb,pre:[g[0],g[1],r.ga,r.gb]}});
   S._lbPre=outros.map(o=>o.pre);
   const meuJ={a:c.parts[ai.ia].nome,b:c.parts[ai.ib].nome,ca:c.parts[ai.ia].cor,cb:c.parts[ai.ib].cor,ga:j.ga,gb:j.gb,meu:true};
   const dados={};Object.keys(LIGAS).forEach(pa=>{dados[pa]=resultadosPais(pa)});
@@ -4126,7 +4136,8 @@ function habBonus(j){
 }
 // ----- Estrelas -----
 function estrelaNivel(j){const a=j.art||0;const n=a>=5?2:a>=3?1:0;
-  const c=(j.f>=85||(j.pot>=90&&j.f>=80))?2:(j.f>=80?1:0);          // craque = overall alto (não depende só de títulos de artilharia)
+  let pk=50;try{pk=picoDe(S.pais,S.div||0)}catch(e){}
+  const c=(j.f>=Math.max(80,0)||j.f>=pk-1)?2:(j.f>=pk-4?1:0);          // craque = overall alto (não depende só de títulos de artilharia)
   const m=Math.max(n,c,j._estr||0);if(m>(j._estr||0))j._estr=m;return m}   // memorizado: a estrela não some mais   // 0 sem estrela · 1 amarela · 2 vermelha
 function estrelaIcone(j){const n=estrelaNivel(j);return n===2?"🔴★":n===1?"🟡★":""}
 // bônus EM JOGO (a força base não muda)
@@ -5167,7 +5178,7 @@ function recuperaParaProximoJogo(clube){
     if(e0>=100)return;
     const ref=(j.ultimoJogoDia!=null)?j.ultimoJogoDia:hoje-7;
     const dias=Math.max(0,hoje-ref);
-    j.en=dias>=4?100:Math.min(100,e0+8*dias);
+    j.en=dias>=7?100:Math.min(100,e0+6*dias);   // gradual: +6 por dia de folga (semana cheia = 100%)
   });
 }
 // ---------- notas por jogador e ganho de força a cada 10 jogos ----------
@@ -7575,8 +7586,15 @@ function comecaRodada(){
 // ===== UI =====
 function ir(k){
   if(k==='cal'){S.calMes=null;S.calAno=null} // navegação segura: durante a partida, só volta para a partida
-  if(S&&S.live){S.aba='live';render();return}
+  if(S&&S.live){if(k!=='live'&&typeof toast==='function')toast('⚽ Partida em andamento: termine o jogo para abrir essa tela');S.aba='live';render();return}
   S.aba=k;render();
+}
+function _abaSegura(fn){   // uma aba com erro não pode travar a navegação (ex.: Mercado que "não abre")
+  try{if(typeof fn!=='function')fn=abaHome;return fn()}catch(e){
+    console.error('Erro na aba',S&&S.aba,e);
+    if(S&&S.aba==='mer'){try{S.merc={tela:'menu'};return abaMer()}catch(e2){console.error(e2)}}
+    return `<div class="card"><h3>⚠️ Não foi possível abrir esta tela</h3><small class="mu" style="display:block;margin:6px 0">${String(e&&e.message||e).replace(/</g,'&lt;')}</small><div class="row"><button class="sm" onclick="S.aba='home';S.merc=null;render()">🏠 Início</button><button class="sm s" onclick="render()">Tentar de novo</button></div></div>`;
+  }
 }
 function render(){
   const app=document.getElementById("app");
@@ -7585,7 +7603,7 @@ function render(){
   const eu=S.clubes[S.meu];
   let h=`<header><div class="row"><div><h2>${escudo(eu,24)} ${eu.nome}</h2><small>Treinador ${S.treinador} · Temp. ${S.temp} · ${agendaTexto()}</small></div><div style="text-align:right"><b class="${eu.caixa<0?'r':'g'}" style="cursor:pointer" onclick="ir('fin')">${R$(eu.caixa)}</b><br><div style="display:flex;gap:6px;justify-content:flex-end;margin-top:4px"><button class="disq" title="Menu" onclick="abreMenu()">☰</button><button class="disq" title="Salvar jogo" onclick="salvarAgora()">💾</button><button class="disq" title="Online" onclick="ir(\'onl\')">🌐</button><button class="disq" title="Menu inicial" onclick="irTitulo()">🏠</button><button class="disq" title="Som" onclick="somOn=!somOn;if(somOn){audio()}else{try{speechSynthesis.cancel()}catch(e){}}render()">${somOn?'🔊':'🔇'}</button></div></div></div></header><div class="wrap">`;
   const trocouTela=(window._abaAnt!==S.aba);window._abaAnt=S.aba;
-  h+=`<div class="${trocouTela?'fade':''}">`;h+=({sel:()=>abaSel(),hum:()=>abaHum(),onl:()=>abaOnl(),home:abaHome,cal:abaCal,cl:()=>abaCL(),lb:()=>abaLB(),el:abaEL,sa:abaSA,cn:abaCN,est:abaEst,banco:abaBanco,tecn:abaTec,fin:abaFin,arti:abaArtilheiros,patro:abaPatro,tech:abaTecHist,base:abaBase,rank:abaRank,pos:abaPos,live:abaLive,elenco:abaElenco,clubes:abaClubes,db:abaDB,cmundo:abaCopasMundo,mund:abaMundial,prem:abaPremios,tat:abaTat,tab:abaTab,mer:abaMer,ed:abaEd})[S.aba]();h+=`</div>`;
+  h+=`<div class="${trocouTela?'fade':''}">`;h+=_abaSegura(({sel:()=>abaSel(),hum:()=>abaHum(),onl:()=>abaOnl(),home:abaHome,cal:abaCal,cl:()=>abaCL(),lb:()=>abaLB(),el:abaEL,sa:abaSA,cn:abaCN,est:abaEst,banco:abaBanco,tecn:abaTec,fin:abaFin,arti:abaArtilheiros,patro:abaPatro,tech:abaTecHist,base:abaBase,rank:abaRank,pos:abaPos,live:abaLive,elenco:abaElenco,clubes:abaClubes,db:abaDB,cmundo:abaCopasMundo,mund:abaMundial,prem:abaPremios,tat:abaTat,tab:abaTab,mer:abaMer,ed:abaEd})[S.aba]);h+=`</div>`;
   h+=`</div><nav style="overflow-x:auto">${(S.live?[["live","🔴","Ao vivo"]]:[["home","🏠","Início"],["elenco","👥","Elenco"],["tat","📋","Tática"],["cal","📅","Calendário"],["tab","🏆","Tabela"]]).map(([k,i,n])=>`<button style="min-width:72px" class="${S.aba===k?'on':''}" onclick="ir('${k}')"><span class="ic">${i}</span>${n}</button>`).join("")}</nav>`;
   app.innerHTML=h;
   posRender();
