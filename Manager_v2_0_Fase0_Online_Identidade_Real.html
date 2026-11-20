@@ -1050,8 +1050,11 @@ function fimTemporada(){
   try{S._objFim=fechaObjetivo(posFinal)}catch(e){S._objFim=null}
   S._mundOk=false;S.temp++;S.rodada=0;S.agenda=null;S.dia=0;S.cl=null;S.lb=null;S.cn=null;S.el=null;S.sa=null;S.extras=0;
   let movs=[];try{movs=aplicaAcessoRebaixamento(tabelaNomes)}catch(e){movs=[]}
-  const meuMov=movs.find(m=>m.nome===meuNome);
-  if(meuMov){try{reconstroiMinhaLiga(meuMov.para,meuNome)}catch(e){}}
+  let migrou=null;
+  if(S.moveCarreira){const mv=S.moveCarreira;S.moveCarreira=null;if(mudaCarreiraPara(mv))migrou=mv}
+  const meuMov=migrou?null:movs.find(m=>m.nome===meuNome);
+  if(migrou){}
+  else if(meuMov){try{reconstroiMinhaLiga(meuMov.para,meuNome)}catch(e){}}
   else if(movs.length){try{reconstroiMinhaLiga(S.div,meuNome)}catch(e){}}
   S.clubes.forEach((c,ci)=>{c.pts=c.j=c.v=c.e=c.d=c.gp=c.gc=0;evoluiElenco(c,'liga|'+ci);
     while(c.elenco.length<20)c.elenco.push(novoJog(pick(POS),c.forca-6))});
@@ -1062,8 +1065,8 @@ function fimTemporada(){
   resolveEmprestimos();clMontaTemporada();lbMontaTemporada();try{elInicia()}catch(e){S.el=null}try{saInicia()}catch(e){S.sa=null}try{cnInicia()}catch(e){S.cn=null}try{agendaMonta()}catch(e){S.agenda=null;S.dia=0}try{(S.pedidosSaida||[]).forEach(p=>{const j=meuReal().elenco.find(x=>x.id===p.jid);if(j)j.mor=Math.max(15,moralJ(j)-5)});S.pedidosSaida=[]}catch(e){}
   let renovAuto={renov:[],ficou:[]};try{renovAuto=renovaAutomatico()}catch(e){}S._renovAuto=renovAuto;let saidos=[];try{saidos=eu0Saidos()}catch(e){}vencerContratos();try{limitaElenco32()}catch(e){}try{geraLivres(saidos)}catch(e){}try{geraObjetivo()}catch(e){}try{patrocinioFimTemporada(posFinal)}catch(e){}S.fixt=fixtures(S.clubes.length%2?S.clubes.length+1:S.clubes.length,S.clubes.length);geraMercado();save();render();
   const subiu=meuMov&&meuMov.para<meuMov.de,desceu=meuMov&&meuMov.para>meuMov.de;
-  const txtMov=subiu?`\n\n⬆️ ACESSO! O ${meuNome} subiu para a ${LIGANOME[S.pais][S.div]}.`:desceu?`\n\n⬇️ REBAIXAMENTO. O ${meuNome} caiu para a ${LIGANOME[S.pais][S.div]}.`:"";
-  const listaMov=movs.length?`\n\nSobem e caem na sua liga:\n`+movs.filter(m=>m.de===divAntes||m.para===divAntes).map(m=>`${m.para<m.de?"⬆️":"⬇️"} ${m.nome}`).join("\n"):"";
+  const txtMov=migrou?`\n\n🚀 NOVO DESAFIO! Você agora é o técnico do ${S.clubes[S.meu].nome} (${S.pais}, ${LIGANOME[S.pais][S.div]}).`:subiu?`\n\n⬆️ ACESSO! O ${meuNome} subiu para a ${LIGANOME[S.pais][S.div]}.`:desceu?`\n\n⬇️ REBAIXAMENTO. O ${meuNome} caiu para a ${LIGANOME[S.pais][S.div]}.`:"";
+  const listaMov=(movs.length&&!migrou)?`\n\nSobem e caem na sua liga:\n`+movs.filter(m=>m.de===divAntes||m.para===divAntes).map(m=>`${m.para<m.de?"⬆️":"⬇️"} ${m.nome}`).join("\n"):"";
   aviso("Temporada encerrada! Você ficou em "+posFinal+"º. Campeão: "+S.hist[S.hist.length-1].campeao+txtMov+(avisoEstrela?"\n\n"+avisoEstrela:"")+listaMov+(movsMundo.length?"\n\nAcessos pelo mundo: "+movsMundo.filter(m=>m.para<m.de&&m.de===1).slice(0,6).map(m=>m.nome+" ("+m.pais+")").join(", "):"")+(estrelasMundo.length?"\n\nNovas estrelas pelo mundo:\n"+estrelasMundo.slice(0,8).map(e=>(e.nivel===2?"🔴★ ":"🟡★ ")+e.nome+" ("+e.clube+", "+e.liga+")").join("\n"):""),mostraTecPendente);
 }
 function tabela(){return [...S.clubes].sort((a,b)=>b.pts-a.pts||(b.gp-b.gc)-(a.gp-a.gc)||b.gp-a.gp)}
@@ -1703,6 +1706,7 @@ function garanteTec(){
   if(!S||!S.clubes)return;
   S.clubes.forEach(c=>{if(!c.tec)c.tec=geraTec(c.forca)});
   S.clubes.forEach(c=>{if(c.tec&&c.tec.meu&&c.id!==S.meu)c.tec=geraTec(c.forca)});
+  S.clubes.forEach(c=>{if(c.id!==S.meu&&c.hum&&!c.hum.uid&&c.hum.nome===S.treinador)delete c.hum});   // conserta saves com 2 clubes sob controle
   if(!S.tecLivres||!S.tecLivres.length){S.tecLivres=[];for(let i=0;i<8;i++)S.tecLivres.push(geraTec(rnd(50,85)))}
   const eu=S.clubes[S.meu];
   if(!eu.tec||!eu.tec.meu){const hab=eu.tec&&eu.tec.hab?Math.min(eu.tec.hab,60):50;eu.tec={id:"eu",nome:S.treinador,hab:hab,tit:0,sal:0,idade:40,meu:true}}
@@ -1739,44 +1743,95 @@ function propoeClube(id){
 function gerarPropostasTec(fimTemp){
   if(!S||!S.clubes)return;
   if(!S.propostasTec)S.propostasTec=[];
-  S.propostasTec=S.propostasTec.filter(p=>!p.resposta?(S.temp-(p.temp||S.temp))<1:false);   // expira ofertas antigas
-  const pend=S.propostasTec.filter(p=>!p.resposta);
-  if(pend.length>=3)return;
+  S.propostasTec=S.propostasTec.filter(p=>!p.resposta&&(S.temp-(p.temp||S.temp))<1);   // expira ofertas antigas/respondidas
+  const pend=S.propostasTec;
+  if(pend.length>=3||S.moveCarreira)return;
   if(S.temp===1&&S.dia<10&&!fimTemp)return;
-  const eu=S.clubes[S.meu],rep=reputacao();
-  const tit=(eu.tec&&eu.tec.tit)||0;
-  const t=tabela(),pos=t.findIndex(c=>c.id===S.meu)+1,desemp=Math.max(0,(t.length-pos)/Math.max(1,t.length-1));   // 0..1
+  const eu=S.clubes[S.meu],rep=reputacao(),tit=(eu.tec&&eu.tec.tit)||0;
+  const t=tabela(),pos=t.findIndex(c=>c.id===S.meu)+1,desemp=Math.max(0,(t.length-pos)/Math.max(1,t.length-1));
+  const aprov=eu.j>0?(3*eu.v+eu.e)/(3*eu.j):.5;                          // aproveitamento do técnico na temporada
   let pop=0;try{pop=Math.min(15,pontosFama(eu.nome)/50)}catch(e){}
-  const merito=rep+tit*4+desemp*15+pop;                                    // reputação+títulos+desempenho+popularidade
+  const merito=rep+tit*2+desemp*10+(aprov-.5)*30+pop;                     // reputação + títulos + desempenho + popularidade
   if(R()>(fimTemp?.7:.12)+(merito-50)*.004)return;
-  const cand=S.clubes.filter(c=>c.id!==S.meu&&c.tec&&!c.tec.meu&&!pend.some(p=>p.clube===c.id)&&c.forca<=merito+14)
-    .map(c=>({c,w:Math.max(1,c.forca-20)*(c.forca>=merito-10?1.6:1)})).sort((a,b)=>b.w*R()-a.w*R());
-  const n=Math.min(3-pend.length,fimTemp?2+(merito>75?1:0):1);              // clubes grandes disputam treinadores de destaque
-  cand.slice(0,n).forEach(({c:alvo})=>{
-    S.propostasTec.push({id:Math.random().toString(36).slice(2),clube:alvo.id,clubeNome:alvo.nome,clubeForca:alvo.forca,pais:S.pais,temp:S.temp,
-      chance:Math.max(.25,Math.min(.95,.5+(merito-alvo.forca)/40+(S.dir-50)*.005)),resposta:null,espontanea:true});
-  });
+  const meanF=S.clubes.reduce((a,c)=>a+c.forca,0)/S.clubes.length,k=meanF/Math.max(20,picoDe(S.pais,S.div)-3.5);
+  const cand=[];
+  Object.keys(LIGAS).forEach(pa=>(LIGAS[pa]||[]).forEach((lst,dv)=>{
+    if(dv>1&&pa!==S.pais)return;
+    lst.forEach((c,idx)=>{
+      if(pa===S.pais&&dv===S.div){const cl=S.clubes.find(x=>x.nome===c[0]);if(!cl||cl.id===S.meu||(cl.tec&&cl.tec.meu))return;cand.push({pa,dv,nome:cl.nome,prest:cl.forca,imediata:true,clube:cl.id});return}
+      if(pa===S.pais&&c[0]===eu.nome)return;
+      cand.push({pa,dv,nome:c[0],prest:picoClube(pa,dv,idx)*k,imediata:false});
+    });
+  }));
+  const pool=cand.filter(x=>x.prest<=merito+10&&!pend.some(p=>p.clubeNome===x.nome))
+    .map(x=>({x,w:Math.exp(-Math.pow(x.prest-(merito-6),2)/180)*(x.prest>merito-8?1.5:1)}));
+  const n=Math.min(3-pend.length,fimTemp?(merito>70?3:2):1);               // clubes grandes disputam treinadores de destaque
+  for(let i=0;i<n&&pool.length;i++){
+    const tot=pool.reduce((a,o)=>a+o.w,0);let r=R()*tot,j=0;
+    while(j<pool.length-1&&(r-=pool[j].w)>0)j++;
+    const x=pool.splice(j,1)[0].x;
+    S.propostasTec.push({id:Math.random().toString(36).slice(2),clube:x.imediata?x.clube:null,clubeNome:x.nome,clubeForca:Math.round(x.prest),
+      pais:x.pa,div:x.dv,liga:(LIGANOME[x.pa]||[])[x.dv]||"",externa:!x.imediata,temp:S.temp,
+      chance:Math.max(.25,Math.min(.95,.5+(merito-x.prest)/40+((S.dir==null?70:S.dir)-50)*.005)),resposta:null,espontanea:true});
+  }
   save();
+}
+// Troca de clube em OUTRA liga/país, aplicada na virada da temporada (cada clube leva elenco e dados; o mundo se mantém)
+function mudaCarreiraPara(m){
+  const bak={clubes:S.clubes,pais:S.pais,div:S.div,meu:S.meu,divAtual:S.divAtual,tabFinal:S.tabFinal,mem:S._mem,ext:S.ext?Object.assign({},S.ext):null,fixt:S.fixt,ing:S.ing};
+  try{
+    const eu0=S.clubes[S.meu],hab=eu0.tec.hab,tit=eu0.tec.tit,velhoPais=S.pais;
+    if(m.pais===S.pais){reconstroiMinhaLiga(m.div,m.nome)}
+    else{
+      if(!S.ext)S.ext={};
+      S.clubes.forEach(c=>{const ch=chaveFixa(velhoPais,c.nome);if(!ch)return;
+        const cp=Object.assign({},c,{ext:true,pais:velhoPais,div:ch.div,idx:ch.idx});
+        if(cp.tec&&cp.tec.meu)cp.tec=geraTec(c.forca);if(cp.hum&&!cp.hum.uid)delete cp.hum;
+        S.ext[velhoPais+"|"+ch.div+"|"+ch.idx]=cp});
+      S.divAtualPais=S.divAtualPais||{};S.divAtualPais[velhoPais]=S.divAtual;
+      S.pais=m.pais;S.divAtual=S.divAtualPais[m.pais]||null;garanteDivAtual();S._mem={};
+      const div=S.divAtual[m.nome]!=null?S.divAtual[m.nome]:m.div;
+      S.clubes=[];S.div=div;S.meu=0;
+      reconstroiMinhaLiga(div,m.nome);S.tabFinal=null;
+    }
+    const novo=S.clubes[S.meu];if(!novo||novo.nome!==m.nome)throw new Error("clube de destino não encontrado");
+    const antNome=novo.tec?novo.tec.nome:"—";
+    try{regTec("fim",antNome,S.treinador,novo.nome,S.pais,"Assumiu via proposta")}catch(e){}
+    novo.tec={id:"eu",nome:S.treinador,hab:hab,tit:tit,sal:0,idade:40,meu:true};
+    S.dir=70;S.tor=70;S.cap=null;S.selId=null;S.emp=[];S.homeAba="jogar";S.cob=null;S.cobPen=null;S.esc=null;
+    S.props=[];S.emprest=[];S.pedidosSaida=[];S.ofertas=null;S.propostasTec=[];S.forma=[];
+    S.clubes.forEach(c=>{c._conf=70});
+    try{garanteTec();humInit();auto(novo,true)}catch(e){}
+    return true;
+  }catch(e){
+    console.error("mudaCarreiraPara falhou, restaurando",e);
+    S.clubes=bak.clubes;S.pais=bak.pais;S.div=bak.div;S.meu=bak.meu;S.divAtual=bak.divAtual;S.tabFinal=bak.tabFinal;S._mem=bak.mem;S.ext=bak.ext;S.fixt=bak.fixt;S.ing=bak.ing;
+    return false;
+  }
 }
 function aceitaPropostaTec(id){
   if(!S.propostasTec)return;
   const p=S.propostasTec.find(x=>x.id===id);
   if(!p||p.resposta)return;
+  const velho=S.clubes[S.meu],hab=velho.tec.hab,tit=velho.tec.tit;
+  if(p.externa){                                   // outra liga/país: assume no início da próxima temporada
+    if(Math.random()>p.chance){p.resposta='recusada';save();aviso(`${p.clubeNome} retirou a proposta.`);render();return}
+    S.moveCarreira={pais:p.pais,nome:p.clubeNome,div:p.div};
+    S.propostasTec.forEach(x=>{if(!x.resposta&&x!==p)x.resposta='recusada'});
+    p.resposta='aceita';save();
+    aviso(`Acordo fechado com o ${p.clubeNome} (${p.pais}, ${p.liga||''}).\nVocê segue no ${velho.nome} até o fim da temporada e assume o novo clube na próxima.`,render);return;
+  }
   const alvo=S.clubes[p.clube];
   if(!alvo)return;
-  if(Math.random()>p.chance){
-    p.resposta='recusada';
-    save();
-    aviso(`${alvo.nome} retirou a proposta.`);
-    render();
-    return;
-  }
-  const velho=S.clubes[S.meu],hab=velho.tec.hab,tit=velho.tec.tit;
+  if(Math.random()>p.chance){p.resposta='recusada';save();aviso(`${alvo.nome} retirou a proposta.`);render();return}
   try{regTec("fim",S.treinador,velho.tec.nome,velho.nome,S.pais,"Aceitou proposta de outro clube");regTec("fim",alvo.tec?alvo.tec.nome:"—",S.treinador,alvo.nome,S.pais,"Assumiu via proposta")}catch(e){}
-  S.meu=p.clube;S.dir=70;S.tor=70;S.cap=null;S.selId=null;S.emp=[];S.homeAba="jogar";
+  velho.tec=geraTec(velho.forca);                  // o clube antigo ganha técnico novo
+  if(velho.hum&&!velho.hum.uid)delete velho.hum;   // ...e deixa de ser controlado por mim (era isso que fazia comandar 2 clubes)
+  S.meu=p.clube;S.dir=70;S.tor=70;S.cap=null;S.selId=null;S.emp=[];S.homeAba="jogar";S.cob=null;S.cobPen=null;S.esc=null;
   S.clubes[p.clube].tec={id:"eu",nome:S.treinador,hab:hab,tit:tit,sal:0,idade:40,meu:true};
-  p.resposta='aceita';
-  garanteTec();save();aviso(`Você agora é o técnico do ${alvo.nome}!`,render);
+  p.resposta='aceita';S.propostasTec.forEach(x=>{if(!x.resposta)x.resposta='recusada'});
+  try{garanteTec();humInit();auto(alvo,true)}catch(e){}
+  save();aviso(`Você agora é o técnico do ${alvo.nome}!`,render);
 }
 function recusaPropostaTec(id){
   if(!S.propostasTec)return;
@@ -6047,6 +6102,7 @@ function aceitaOferta(id){
   const hab=eu.tec.hab,tit=eu.tec.tit;
   const antigoTecNovo=geraTec(eu.forca),tecAntigoDoNovo=novo.tec?novo.tec.nome:"—";
   eu.tec=antigoTecNovo;                                                   // o clube antigo ganha técnico novo
+  if(eu.hum&&!eu.hum.uid)delete eu.hum;                                   // e deixa de ser controlado por mim
   try{regTec("fim",S.treinador,antigoTecNovo.nome,eu.nome,S.pais,"Você saiu (demitido)");regTec("fim",tecAntigoDoNovo,S.treinador,novo.nome,S.pais,"Você assumiu o clube")}catch(e){}
   S.meu=id;S.dir=70;S.tor=70;S.cap=null;S.selId=null;S.emp=[];S.homeAba="jogar";S.cob=null;S.cobPen=null;S.esc=null;
   novo.tec={id:"eu",nome:S.treinador,hab:hab,tit:tit,sal:0,idade:40,meu:true};
@@ -7696,9 +7752,9 @@ function abaHome(){
     if(S.propostasTec&&S.propostasTec.some(p=>!p.resposta)){
       corpo+=`<div class="card"><div class="tag" style="margin-bottom:6px">📨 Propostas de treinador</div><small class="mu">Clubes estão interessados em você!</small><div class="tbL">`;
       S.propostasTec.filter(p=>!p.resposta).forEach(p=>{
-        const alvo=S.clubes.find(c=>c.id===p.clube);
+        const alvo=p.externa?{nome:p.clubeNome,forca:p.clubeForca,div:p.div}:S.clubes.find(c=>c.id===p.clube);
         if(!alvo)return;
-        corpo+=`<div class="tbR"><span class="tbN"><span><b>${alvo.nome}</b><small>${alvo.forca} força · ${alvo.div+1}ª divisão</small></span></span><span style="display:flex;gap:6px"><button class="sm s" onclick="aceitaPropostaTec('${p.id}')">Aceitar</button><button class="sm s" onclick="recusaPropostaTec('${p.id}')">Recusar</button></span></div>`;
+        corpo+=`<div class="tbR"><span class="tbN"><span><b>${alvo.nome}</b><small>${p.externa?p.pais+' · '+(p.liga||'')+' · assume na próxima temporada':(alvo.forca+' força · '+((alvo.div||0)+1)+'ª divisão')}</small></span></span><span style="display:flex;gap:6px"><button class="sm s" onclick="aceitaPropostaTec('${p.id}')">Aceitar</button><button class="sm s" onclick="recusaPropostaTec('${p.id}')">Recusar</button></span></div>`;
       });
       corpo+=`</div></div>`;
     }
